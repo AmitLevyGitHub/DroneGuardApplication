@@ -1,38 +1,37 @@
-import React from 'react';
-import {NodePlayerView} from 'react-native-nodemediaclient';
-import {TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
-const {width, height} = Dimensions.get('window');
+/* eslint-disable react-native/no-inline-styles */
+import React from "react";
+import PropTypes from "prop-types";
+import { NodePlayerView } from "react-native-nodemediaclient";
+import { streamDeviceDomain } from "../../Assets/consts";
 //
-const VideoStream = () => {
+const VideoStream = (props) => {
   const [myRef, setMyRef] = React.useState(null);
-  const streamDeviceDomain = '192.168.68.131'; // const streamDeviceDomain = '192.168.68.126';
   const RTMPstreamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
-  //
-  React.useLayoutEffect(() => {
-    console.log(`width = ${width} -- height= ${height}`);
-  });
   //
   return (
     <NodePlayerView
-      style={styles.streamerCameraView}
-      ref={vp => setMyRef(vp)}
+      style={{
+        position: "absolute",
+        backgroundColor: "#B6DCE9",
+        bottom: 0,
+        left: 0,
+        width: props.scaledWidth,
+        height: props.scaledHeight,
+        zIndex: 0,
+      }}
+      ref={(vp) => setMyRef(vp)}
       inputUrl={RTMPstreamURL}
       scaleMode="ScaleAspectFit"
-      bufferTime={300}
+      bufferTime={100}
       maxBufferTime={1000}
       autoplay
+      onStatus={() => console.log("on status func")}
+      renderType="SURFACEVIEW"
     />
   );
 };
-const styles = StyleSheet.create({
-  streamerCameraView: {
-    position: 'absolute',
-    backgroundColor: '#B6DCE9',
-    top: 0,
-    left: 0,
-    width,
-    height,
-    zIndex: 1,
-  },
-});
+VideoStream.propTypes = {
+  scaledWidth: PropTypes.number.isRequired,
+  scaledHeight: PropTypes.number.isRequired,
+};
 export default VideoStream;

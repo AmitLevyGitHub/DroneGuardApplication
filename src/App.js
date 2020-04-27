@@ -1,5 +1,4 @@
 import React from 'react';
-import {View} from 'react-native';
 import Orientation from 'react-native-orientation-locker';
 import FakeRouter from './FakeRouter_and_Screens/FakeRouter';
 
@@ -11,9 +10,9 @@ const App = () => {
     };
   }, []);
   return (
-    <View>
+    <React.Fragment>
       <FakeRouter />
-    </View>
+    </React.Fragment>
   );
 };
 
