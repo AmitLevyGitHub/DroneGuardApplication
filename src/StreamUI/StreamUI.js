@@ -4,7 +4,7 @@ import {View, Button} from 'react-native';
 import PropTypes from 'prop-types';
 import Orientation from 'react-native-orientation-locker';
 //
-import styles from '../styles';
+import styles from './VideoStream.styles';
 import VideoStream from './VideoStream';
 //
 const StreamUI = props => {
@@ -14,11 +14,11 @@ const StreamUI = props => {
   //
   return (
     <View style={styles.container}>
-      <VideoStream />
       <Button
         title="Welcome screen"
         onPress={() => props.setScreen('welcome')}
       />
+      <VideoStream />
     </View>
   );
 };
