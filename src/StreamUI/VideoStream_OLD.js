@@ -1,5 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from "react";
+import { View } from "react-native";
 import PropTypes from "prop-types";
 import { NodePlayerView } from "react-native-nodemediaclient";
 import { streamDeviceDomain } from "../../Assets/consts";

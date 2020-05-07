@@ -9,6 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@ant-design/react-native": "^3.3.0",
+    "@turf/turf": "^5.1.6",
     "lodash": "^4.17.15",
     "react": "16.9.0",
     "react-native": "0.61.5",

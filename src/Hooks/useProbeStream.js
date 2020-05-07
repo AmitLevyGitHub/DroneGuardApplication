@@ -8,10 +8,12 @@ export default function useProbeStream(errorOccurred) {
   const [height, setHeight] = React.useState(540);
   const [firstVideoStream, setFirstVideoStream] = React.useState({});
   React.useLayoutEffect(() => {
-    const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
+    // const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
+    const streamURL = `rtp://10.100.102.12:1234`;
     (async () => {
       setIsProbing(true);
       try {
+        console.log("starting probe");
         const streamInfo = await RNFFprobe.getMediaInformation(streamURL);
         const streams = streamInfo.streams;
         for (let i = 0; i < streams.length; i++) {
