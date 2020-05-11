@@ -4,6 +4,7 @@ import { Button, Text, TextInput } from "react-native";
 import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
 import { RNS3 } from "react-native-aws3";
+import { AWSkeys } from '../consts'
 //
 const CropUploadStuff = () => {
   React.useEffect(() => {
@@ -160,8 +161,8 @@ const CropUploadStuff = () => {
             keyPrefix: "uploads/",
             bucket: "drone-guard-videos",
             region: "eu-west-1",
-            accessKey: "", //"AKIAIYHUHJZSZVY2YB2Q",
-            secretKey: "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",
+            accessKey: AWSkeys.accessKey,
+            secretKey: AWSkeys.secretKey,
             successActionStatus: 201,
           };
           console.log(`uploading ${imageUploadName} to bucket!`);
@@ -204,8 +205,8 @@ const CropUploadStuff = () => {
             keyPrefix: "uploads/",
             bucket: "drone-guard-videos",
             region: "eu-west-1",
-            accessKey: "AKIAIYHUHJZSZVY2YB2Q",
-            secretKey: "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",
+            accessKey: AWSkeys.accessKey,
+            secretKey: AWSkeys.secretKey,
             successActionStatus: 201,
           };
           console.log(`uploading ${videoUploadName} to bucket!`);
