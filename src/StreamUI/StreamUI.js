@@ -20,7 +20,7 @@ import useSaveStream from "../Hooks/useSaveStream";
 import useProbeStream from "../Hooks/useProbeStream";
 import useScaleStream from "../Hooks/useScaleStream";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
-import { streamDeviceDomain } from "../../Assets/consts";
+import { streamURL } from "../../Assets/consts";
 //
 const styles = StyleSheet.create({
   container: {
@@ -52,8 +52,6 @@ const StreamUI = (props) => {
   const [droneHeightCM, centerCoordinate, droneBearing] = useDroneData();
   //stream
   const [myRef, setMyRef] = React.useState(null);
-  // const RTMPstreamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
-  const RTMPstreamURL = `rtp://10.100.102.12:1234`;
   const [errorOccurred] = useSaveStream();
   const [isProbing, streamWidth, streamHeight] = useProbeStream(errorOccurred);
   const [scaledWidth, scaledHeight] = useScaleStream(streamWidth, streamHeight);
@@ -74,10 +72,10 @@ const StreamUI = (props) => {
   //navigation status feedback, allow the user to close it
   const [isStatusModal, setIsStatusModal] = React.useState(true);
   //
-  console.log(`
-    showNavStatus = ${showNavStatus.toString()}
-    isStatusModal = ${isStatusModal.toString()}
-  `);
+  // console.log(`
+  //   showNavStatus = ${showNavStatus.toString()}
+  //   isStatusModal = ${isStatusModal.toString()}
+  // `);
   return (
     <Provider>
       <View style={styles.container}>
@@ -123,12 +121,12 @@ const StreamUI = (props) => {
                   zIndex: 5,
                 }}
                 ref={(vp) => setMyRef(vp)}
-                inputUrl={RTMPstreamURL}
+                inputUrl={streamURL}
                 scaleMode="ScaleAspectFit"
                 bufferTime={100}
                 maxBufferTime={1000}
                 autoplay
-                onStatus={() => console.log("on status func")}
+                // onStatus={() => console.log("on status func")}
                 renderType="SURFACEVIEW"
               />
             </TouchableWithoutFeedback>

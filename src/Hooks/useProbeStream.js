@@ -1,19 +1,17 @@
 import React from "react";
 import { RNFFprobe } from "react-native-ffmpeg";
 import cloneDeep from "lodash/cloneDeep";
-import { streamDeviceDomain } from "../../Assets/consts";
+import { streamURL } from "../../Assets/consts";
 export default function useProbeStream(errorOccurred) {
   const [isProbing, setIsProbing] = React.useState(true);
   const [width, setWidth] = React.useState(960);
   const [height, setHeight] = React.useState(540);
   const [firstVideoStream, setFirstVideoStream] = React.useState({});
   React.useLayoutEffect(() => {
-    // const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
-    const streamURL = `rtp://10.100.102.12:1234`;
     (async () => {
       setIsProbing(true);
       try {
-        console.log("starting probe");
+        console.log(`start probing URL = ${streamURL}`);
         const streamInfo = await RNFFprobe.getMediaInformation(streamURL);
         const streams = streamInfo.streams;
         for (let i = 0; i < streams.length; i++) {
