@@ -1,10 +1,10 @@
-export const streamDeviceDomain = "192.168.68.131";
-export const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
+export const streamDeviceDomain = "192.168.68.132";
+// export const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
 // export const streamURL = `rtsp://${streamDeviceDomain}/live/myVideo`;
 // export const streamURL = "rtmp://127.0.0.1:1935/appName/streamName";
 // export const streamURL = `rtp://${streamDeviceDomain}`;
 // export const streamURL = `rtmp://${streamDeviceDomain}/appName/streamName`;
-// export const streamURL = `rtsp://${streamDeviceDomain}:6554/stream1`;
+export const streamURL = `rtsp://${streamDeviceDomain}:6554/stream1`;
 //
 function lenFormula(f, Dxy) {
   function F(n) {
