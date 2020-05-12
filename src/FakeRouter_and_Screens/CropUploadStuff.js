@@ -4,7 +4,7 @@ import { Button, Text, TextInput } from "react-native";
 import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
 import { RNS3 } from "react-native-aws3";
-import { AWSkeys } from '../consts'
+import { AWSkeys } from "../Assets/secrets";
 //
 const CropUploadStuff = () => {
   React.useEffect(() => {

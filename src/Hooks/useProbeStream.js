@@ -1,7 +1,7 @@
 import React from "react";
 import { RNFFprobe } from "react-native-ffmpeg";
 import cloneDeep from "lodash/cloneDeep";
-import { streamURL } from "../../Assets/consts";
+import { streamURL } from "../Assets/consts";
 export default function useProbeStream(errorOccurred) {
   const [isProbing, setIsProbing] = React.useState(true);
   const [width, setWidth] = React.useState(960);

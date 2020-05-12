@@ -1,4 +1,4 @@
-export const streamDeviceDomain = "192.168.68.132";
+export const streamDeviceDomain = "192.168.68.134";
 // export const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
 // export const streamURL = `rtsp://${streamDeviceDomain}/live/myVideo`;
 // export const streamURL = "rtmp://127.0.0.1:1935/appName/streamName";

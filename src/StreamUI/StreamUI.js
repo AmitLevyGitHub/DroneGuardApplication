@@ -20,7 +20,7 @@ import useSaveStream from "../Hooks/useSaveStream";
 import useProbeStream from "../Hooks/useProbeStream";
 import useScaleStream from "../Hooks/useScaleStream";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
-import { streamURL } from "../../Assets/consts";
+import { streamURL } from "../Assets/consts";
 //
 const styles = StyleSheet.create({
   container: {

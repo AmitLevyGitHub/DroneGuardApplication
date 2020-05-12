@@ -5,7 +5,7 @@
 import React from "react";
 import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
-import { streamDeviceDomain } from "../../Assets/consts";
+import { streamDeviceDomain } from "../Assets/consts";
 export default function useSaveStream() {
   const [errorOccurred, setErrorOccurred] = React.useState(false);
   const shouldExecute = React.useRef(false);

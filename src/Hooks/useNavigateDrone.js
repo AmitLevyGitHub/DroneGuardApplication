@@ -1,6 +1,6 @@
 import React from "react";
 import * as turf from "@turf/turf";
-import { piCameraInfo } from "../../Assets/consts";
+import { piCameraInfo } from "../Assets/consts";
 export default function useNavigateDrone(props) {
   const [axisX, setAxisX] = React.useState(-8000);
   const [axisY, setAxisY] = React.useState(-8000);
