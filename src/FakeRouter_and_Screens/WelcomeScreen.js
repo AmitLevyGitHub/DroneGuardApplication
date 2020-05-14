@@ -5,6 +5,7 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import KeepAwake from "react-native-keep-awake";
 //
 import CropUploadStuff from "./CropUploadStuff";
+import useTelemetry from "../Hooks/useTelemetry";
 //
 const WelcomeScreen = (props) => {
   React.useEffect(() => {
@@ -13,6 +14,7 @@ const WelcomeScreen = (props) => {
       KeepAwake.deactivate();
     };
   }, []);
+  // useTelemetry();
   return (
     <ScrollView>
       <Text>Welcome to DroneGuard app</Text>

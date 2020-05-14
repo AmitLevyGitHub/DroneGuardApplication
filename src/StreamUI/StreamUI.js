@@ -15,10 +15,11 @@ import { IconFill } from "@ant-design/icons-react-native";
 import KeepAwake from "react-native-keep-awake";
 import { NodePlayerView } from "react-native-nodemediaclient";
 //
-import useDroneData from "../Hooks/useDroneData";
 import useSaveStream from "../Hooks/useSaveStream";
 import useProbeStream from "../Hooks/useProbeStream";
 import useScaleStream from "../Hooks/useScaleStream";
+import useSocket from "../Hooks/useSocket";
+import useTelemetry from "../Hooks/useTelemetry";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
 import { streamURL } from "../Assets/consts";
 //
@@ -48,8 +49,10 @@ const StreamUI = (props) => {
       KeepAwake.deactivate();
     };
   }, []);
-  //drone
-  const [droneHeightCM, centerCoordinate, droneBearing] = useDroneData();
+  //socket
+  const [socket] = useSocket();
+  //telemetry
+  const [droneTele, gpsTele] = useTelemetry(socket);
   //stream
   const [myRef, setMyRef] = React.useState(null);
   const [errorOccurred] = useSaveStream();
@@ -62,12 +65,12 @@ const StreamUI = (props) => {
     isNavigating,
     showNavStatus,
     navigationStatus,
-  ] = useNavigateDrone({
+  ] = useNavigateDrone(socket, {
     scaledWidth,
     scaledHeight,
-    centerCoordinate,
-    droneHeightCM,
-    droneBearing,
+    centerCoordinate: { lat: gpsTele.latitude, lon: gpsTele.longitude },
+    droneHeightCM: gpsTele.altitude,
+    droneBearing: gpsTele.bearing,
   });
   //navigation status feedback, allow the user to close it
   const [isStatusModal, setIsStatusModal] = React.useState(true);
@@ -126,7 +129,7 @@ const StreamUI = (props) => {
                 bufferTime={100}
                 maxBufferTime={1000}
                 autoplay
-                // onStatus={() => console.log("on status func")}
+                onStatus={() => console.log("on status func")}
                 renderType="SURFACEVIEW"
               />
             </TouchableWithoutFeedback>
@@ -250,7 +253,11 @@ const StreamUI = (props) => {
                 }
               >
                 <View style={{ paddingVertical: 20 }}>
-                  <Text>Total time: {navigationStatus.navigationTime}</Text>
+                  <Text>start time in ms: {navigationStatus.startTime}</Text>
+                  <Text>finish time in ms: {navigationStatus.finishTime}</Text>
+                  <Text>
+                    Total time in ms: {navigationStatus.navigationTime}
+                  </Text>
                   <Text>Total distance: {navigationStatus.totalDistance}</Text>
                   <Text>
                     Final coordinate reached: (

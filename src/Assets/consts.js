@@ -1,11 +1,26 @@
-export const streamDeviceDomain = "192.168.68.134";
-// export const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
-// export const streamURL = `rtsp://${streamDeviceDomain}/live/myVideo`;
-// export const streamURL = "rtmp://127.0.0.1:1935/appName/streamName";
-// export const streamURL = `rtp://${streamDeviceDomain}`;
-// export const streamURL = `rtmp://${streamDeviceDomain}/appName/streamName`;
+/**
+ * streaming & socket
+ */
+// export const streamDeviceDomain = "192.168.68.134";
+// export const streamDeviceDomain = "192.168.68.132";
+// export const streamDeviceDomain = "10.100.102.12";
+export const streamDeviceDomain = "10.100.102.15";
+// export const streamDeviceDomain = "192.168.0.115";
+const socketServerPort = 4001;
+export const socketServerURL = `http://${streamDeviceDomain}:${socketServerPort}`;
 export const streamURL = `rtsp://${streamDeviceDomain}:6554/stream1`;
-//
+// export const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
+/**
+ * files & asyncStorage constants
+ */
+export const emergencyHeight = 10;
+export const emergencyEventKey = "@emergencyEvent";
+export const teleFile = "tele.txt";
+export const loggerFile = "logger.txt";
+export const appErrorsFile = "appErrorsFile.txt";
+/**
+ * camera details
+ */
 function lenFormula(f, Dxy) {
   function F(n) {
     return parseFloat(n);

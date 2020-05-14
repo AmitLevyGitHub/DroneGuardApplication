@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/react-native": "^3.3.0",
+    "@react-native-community/async-storage": "^1.10.1",
     "@turf/turf": "^5.1.6",
     "lodash": "^4.17.15",
     "react": "16.9.0",
@@ -20,7 +21,8 @@
     "react-native-keep-awake": "^4.0.0",
     "react-native-nodemediaclient": "^0.1.6",
     "react-native-orientation-locker": "^1.1.8",
-    "react-native-vector-icons": "^6.6.0"
+    "react-native-vector-icons": "^6.6.0",
+    "socket.io-client": "^2.3.0"
   },
   "devDependencies": {
     "@babel/core": "7.8.7",
@@ -38,7 +40,8 @@
     "metro-react-native-babel-preset": "0.56.4",
     "prettier": "^1.19.1",
     "prettier-eslint": "^9.0.1",
-    "react-test-renderer": "16.9.0"
+    "react-test-renderer": "16.9.0",
+    "reactotron-react-native": "^5.0.0"
   },
   "jest": {
     "preset": "react-native"

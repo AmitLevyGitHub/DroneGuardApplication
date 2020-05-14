@@ -5,6 +5,8 @@ import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
 import { RNS3 } from "react-native-aws3";
 import { AWSkeys } from "../Assets/secrets";
+import AsyncStorage from "@react-native-community/async-storage";
+import { emergencyEventKey } from "../Assets/consts";
 //
 const CropUploadStuff = () => {
   React.useEffect(() => {
@@ -19,6 +21,23 @@ const CropUploadStuff = () => {
       console.log("convertedStat = " + JSON.stringify(convertedStat, null, 2));
       // const dirItems = await RNFS.readDir(RNFS.ExternalDirectoryPath);
       // console.log("dirItems = " + JSON.stringify(dirItems, null, 2));
+      //
+      //
+      for (let i = 1; i <= 200; i++) {
+        try {
+          const eventKey = `${emergencyEventKey}_${i}`;
+          const stringValue = await AsyncStorage.getItem(eventKey);
+          if (!stringValue) {
+            i = 201;
+            break;
+          }
+          const jsonValue = stringValue ? JSON.parse(stringValue) : null;
+          console.log(`${eventKey} = ${stringValue}`);
+        } catch (e) {
+          // error reading value
+          i = 201;
+        }
+      }
     })();
   }, []);
   const [sTime, set_sTime] = React.useState("00");
@@ -30,6 +49,9 @@ const CropUploadStuff = () => {
   const [videoUploadName, setVideoUpload] = React.useState(
     "cutVideo_s00_e10.mp4"
   );
+  const [teleUploadName, setTeleUpload] = React.useState("tele.json");
+  const [teleStartTime, setTeleStartTime] = React.useState(-1);
+  const [teleEndTime, setTeleEndTime] = React.useState(-1);
   //
   return (
     <React.Fragment>
@@ -226,6 +248,100 @@ const CropUploadStuff = () => {
             .catch((err) => {
               console.log("ERROR uploading VIDEO to s3", err);
             });
+        }}
+      />
+      {/** telemetry upload */}
+      <Text style={{ fontSize: 20 }}>Telemetry Upload</Text>
+      <Text>Telemetry file to upload with .extension</Text>
+      <TextInput
+        placeholder="Telemetry To Upload With Extension!"
+        value={teleUploadName}
+        onChangeText={(t) => setTeleUpload(t)}
+      />
+      <Button
+        title="upload telemetry"
+        onPress={() => {
+          const folder = RNFS.ExternalDirectoryPath;
+          const file = {
+            uri: `file://${folder}/${teleUploadName}`,
+            name: teleUploadName,
+            type: "application/json",
+          };
+          const options = {
+            keyPrefix: "uploads/",
+            bucket: "drone-guard-videos",
+            region: "eu-west-1",
+            accessKey: AWSkeys.accessKey,
+            secretKey: AWSkeys.secretKey,
+            successActionStatus: 201,
+          };
+          console.log(`uploading ${teleUploadName} to bucket!`);
+
+          RNS3.put(file, options)
+            .progress((event) => {
+              console.log(`percentage uploaded: ${event.percent}`);
+            })
+            .then((res) => {
+              if (res.status === 201) {
+                console.log("response from successful upload to s3:", res.body);
+                console.log("S3 URL", res.body.postResponse.location);
+              } else {
+                console.log("ERROR status code: ", res.status);
+              }
+            })
+            .catch((err) => {
+              console.log("ERROR uploading VIDEO to s3", err);
+            });
+        }}
+      />
+      {/** clear asyncStorage */}
+      <Text style={{ fontSize: 20 }}>Clear ALL keys in asyncStorage</Text>
+      <Button
+        title="clear all keys in asyncStorage"
+        onPress={() => {
+          AsyncStorage.clear();
+        }}
+      />
+      {/** trim telemetry */}
+      <Text style={{ fontSize: 20 }}>Trim Telemetry</Text>
+      <Text>Start Time (utc timestamp in ms)</Text>
+      <TextInput
+        placeholder="Start Time (utc timestamp in ms)"
+        value={sTime}
+        onChangeText={(t) => setTeleStartTime(t)}
+      />
+      <Text>End Time (utc timestamp in ms)</Text>
+      <TextInput
+        placeholder="End Time (utc timestamp in ms)"
+        value={eTime}
+        onChangeText={(t) => setTeleEndTime(t)}
+      />
+      <Button
+        title="trim telemetry"
+        onPress={async () => {
+          const cutTelemetryName = `cutTelemetry_s${teleStartTime}_e${teleEndTime}.mp4`;
+          console.log(
+            `cutting telemetry from ${teleStartTime} to ${teleEndTime} and saving it with new name = ${cutTelemetryName}`
+          );
+          const cutTelemetryPath =
+            RNFS.ExternalDirectoryPath + "/" + cutTelemetryName;
+          const srcTelemetryPath = RNFS.ExternalDirectoryPath + "/tele.txt";
+          try {
+            // const dataRead = await RNFS.read(srcTelemetryPath, 1, 0);
+            let dataRead = "";
+            dataRead = await RNFS.readFile(srcTelemetryPath);
+            dataRead = dataRead.substring(0, dataRead.length - 1);
+            dataRead = "[" + dataRead + "]";
+            // console.log(dataRead);
+            const dataObj = JSON.parse(dataRead);
+            console.log(`tele count = ${dataObj.length}`);
+          } catch (e) {
+            console.log(
+              `ERROR reading file tele.txt: ${
+                e.hasOwnProperty("message") ? e.message : e
+              }`
+            );
+          }
         }}
       />
     </React.Fragment>
