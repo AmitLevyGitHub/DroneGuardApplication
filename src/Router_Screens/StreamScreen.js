@@ -20,7 +20,7 @@ import useScaleStream from "../Hooks/useScaleStream";
 import useSocket from "../Hooks/useSocket";
 import useTelemetry from "../Hooks/useTelemetry";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
-import { streamURL, S } from "../Assets/consts";
+import { streamingDevice, S } from "../Assets/consts";
 //
 const styles = StyleSheet.create({
   container: {
@@ -110,7 +110,7 @@ const StreamScreen = (props) => {
               zIndex: 5,
             }}
             ref={(vp) => setMyRef(vp)}
-            inputUrl={streamURL}
+            inputUrl={streamingDevice.url}
             scaleMode="ScaleAspectFit"
             bufferTime={100}
             maxBufferTime={1000}

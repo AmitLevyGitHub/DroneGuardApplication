@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Text, TextInput } from "react-native";
+import { ScrollView, Button, Text, TextInput } from "react-native";
 //
 import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
@@ -54,7 +54,7 @@ const CropUploadStuff = () => {
   const [teleEndTime, setTeleEndTime] = React.useState(-1);
   //
   return (
-    <React.Fragment>
+    <ScrollView>
       <Text style={{ fontSize: 20 }}>
         Convert full length original h264 to mp4
       </Text>
@@ -374,6 +374,15 @@ const CropUploadStuff = () => {
             cutTele = "[" + cutTele + "]";
             //
             //save file
+            try {
+              await RNFS.mkdir(RNFS.ExternalDirectoryPath + "/cutTele");
+            } catch (e) {
+              console.log(
+                `ERROR creating directory /cutTele! ${
+                  e.hasOwnProperty("message") ? e.message : e
+                }`
+              );
+            }
             const cutTelemetryName = `emergencyEventTelemetry_s${emergencyEvent.startTime}_e${lastTimeStamp}.json`;
             console.log(
               `cutting telemetry from ${teleStartTime} to ${teleEndTime} and saving it with new name = ${cutTelemetryName}`
@@ -390,7 +399,7 @@ const CropUploadStuff = () => {
           }
         }}
       />
-    </React.Fragment>
+    </ScrollView>
   );
 };
 

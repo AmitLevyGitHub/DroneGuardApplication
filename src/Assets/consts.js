@@ -1,15 +1,37 @@
 /**
+ * toggle saving files
+ */
+export const shouldSave = {
+  // tele: false,
+  tele: true,
+  // video: false,
+  video: true,
+};
+/**
+ * navigation consts
+ */
+export const navConsts = {
+  emergencyHeight: 10,
+};
+/**
+ * telemetry socket
+ */
+export const telemetryDevice = {
+  ip: "192.168.68.132",
+  port: 2222,
+};
+/**
  * streaming & socket
  */
+const streamDeviceDomain = "192.168.68.132";
 // export const streamDeviceDomain = "192.168.68.134";
 // export const streamDeviceDomain = "192.168.68.132";
 // export const streamDeviceDomain = "10.100.102.12";
-export const streamDeviceDomain = "192.168.68.132";
 // export const streamDeviceDomain = "192.168.0.115";
-const socketServerPort = 4001;
-export const socketServerURL = `http://${streamDeviceDomain}:${socketServerPort}`;
-export const streamURL = `rtsp://${streamDeviceDomain}:6554/stream1`;
-// export const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
+export const streamingDevice = {
+  ip: streamDeviceDomain,
+  url: `rtsp://${streamDeviceDomain}:6554/stream1`,
+};
 /**
  * camera details
  */
@@ -30,12 +52,6 @@ export const piCameraInfo = {
   yDimensions: 2.7, //mm
   horizontalDegree: { ...lenFormula(3.6, 3.6) },
   verticalDegree: { ...lenFormula(3.6, 2.7) },
-};
-/**
- * navigation consts
- */
-export const navConsts = {
-  emergencyHeight: 10,
 };
 /**
  * screens

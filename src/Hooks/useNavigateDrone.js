@@ -1,6 +1,6 @@
 import React from "react";
 import * as turf from "@turf/turf";
-import { piCameraInfo } from "../Assets/consts";
+import { piCameraInfo, telemetryDevice } from "../Assets/consts";
 export default function useNavigateDrone(socket, props) {
   const [axisX, setAxisX] = React.useState(-8000);
   const [axisY, setAxisY] = React.useState(-8000);
@@ -20,8 +20,10 @@ export default function useNavigateDrone(socket, props) {
   //socket callback
   React.useEffect(() => {
     if (!socket) return;
-    console.log("in useNavigateDrone will define socket.on()");
-    socket.on("navFinished", (navData) => {
+    socket.on("message", (msg) => {
+      const M = JSON.parse(msg.toString());
+      if (M.type !== "navFinished") return;
+      const navData = { ...M };
       console.log(
         `navFinished with navData = ${JSON.stringify(navData, null, 2)}`
       );
@@ -118,11 +120,28 @@ export default function useNavigateDrone(socket, props) {
     const footprintCM = calcFootprint();
     const { dstDiagonalCM, dstBearing } = calcDiagonalAndBearing(footprintCM);
     const dstCoordinate = calcDstCoordinate(dstDiagonalCM, dstBearing);
-    socket.emit("navigateTo", {
-      targetCoordinate: dstCoordinate,
-      dstDiagonalCM,
-      dstBearing,
-    });
+    const msgToSend = Buffer.from(
+      JSON.stringify({
+        type: "navigateTo",
+        targetCoordinate: dstCoordinate,
+        dstDiagonalCM,
+        dstBearing,
+      })
+    );
+    socket.send(
+      msgToSend,
+      0,
+      msgToSend.length,
+      telemetryDevice.port,
+      telemetryDevice.ip,
+      (err) => {
+        if (err) {
+          console.log("ERROR sending to server: " + err);
+        } else {
+          console.log("message sent to server");
+        }
+      }
+    );
     /**
      * cleanup
      */

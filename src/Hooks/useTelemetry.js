@@ -1,7 +1,7 @@
 import React from "react";
 import RNFS from "react-native-fs";
 import AsyncStorage from "@react-native-community/async-storage";
-import { FN, AS, navConsts } from "../Assets/consts";
+import { FN, AS, navConsts, shouldSave } from "../Assets/consts";
 export default function useTelemetry(socket) {
   //tele
   const [droneTele, setDroneTele] = React.useState({
@@ -20,9 +20,13 @@ export default function useTelemetry(socket) {
   //
   //
   React.useEffect(() => {
-    const save = false;
+    const save = shouldSave.tele;
     if (!socket) return;
-    socket.on("allTelemetry", (receivedTele) => {
+    socket.on("message", (msg) => {
+      const M = JSON.parse(msg.toString());
+      if (M.type !== "allTelemetry") return;
+      // console.log(`data received with altitude = ${M.altitude}`);
+      const receivedTele = { ...M };
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);
       function scaleBat(

@@ -4,8 +4,9 @@ import LoadScreen from "./LoadScreen";
 import LogInScreen from "./LogIn";
 import HomeScreen from "./HomeScreen";
 import UploadScreen from "./UploadScreen";
-import StreamScreen from "../StreamUI/StreamScreen";
+import StreamScreen from "./StreamScreen";
 import AsyncStorage from "@react-native-community/async-storage";
+global.Buffer = global.Buffer || require("buffer").Buffer;
 //
 const Router = () => {
   const [screen, setScreen] = React.useState("load");

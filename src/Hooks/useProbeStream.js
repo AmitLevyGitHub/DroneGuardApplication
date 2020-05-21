@@ -1,7 +1,7 @@
 import React from "react";
 import { RNFFprobe } from "react-native-ffmpeg";
 import cloneDeep from "lodash/cloneDeep";
-import { streamURL } from "../Assets/consts";
+import { streamingDevice } from "../Assets/consts";
 export default function useProbeStream(errorOccurred) {
   const [isProbing, setIsProbing] = React.useState(true);
   const [width, setWidth] = React.useState(960);
@@ -11,8 +11,10 @@ export default function useProbeStream(errorOccurred) {
     (async () => {
       setIsProbing(true);
       try {
-        console.log(`start probing URL = ${streamURL}`);
-        const streamInfo = await RNFFprobe.getMediaInformation(streamURL);
+        console.log(`start probing URL = ${streamingDevice.url}`);
+        const streamInfo = await RNFFprobe.getMediaInformation(
+          streamingDevice.url
+        );
         const streams = streamInfo.streams;
         for (let i = 0; i < streams.length; i++) {
           if (
