@@ -1,17 +1,12 @@
 import React from "react";
 import RNFS from "react-native-fs";
 import AsyncStorage from "@react-native-community/async-storage";
-import {
-  teleFile,
-  appErrorsFile,
-  emergencyEventKey,
-  emergencyHeight,
-} from "../Assets/consts";
+import { FN, AS, navConsts } from "../Assets/consts";
 export default function useTelemetry(socket) {
   //tele
   const [droneTele, setDroneTele] = React.useState({
-    batStatus: -1,
-    wifiSignal: -1,
+    batStatus: 0,
+    wifiSignal: 0,
   });
   const [gpsTele, setGpsTele] = React.useState({
     latitude: -1.0,
@@ -102,14 +97,17 @@ export default function useTelemetry(socket) {
         if (!receivedTele.hasOwnProperty("time")) return;
         if (
           startTime.current === -1 &&
-          receivedTele.altitude <= emergencyHeight
+          receivedTele.altitude <= navConsts.emergencyHeight
         ) {
           startTime.current = receivedTele.time;
           console.log(`emergency event starting now: ${receivedTele.time}`);
         }
-        if (startTime.current > -1 && receivedTele.altitude > emergencyHeight) {
+        if (
+          startTime.current > -1 &&
+          receivedTele.altitude > navConsts.emergencyHeight
+        ) {
           console.log(`emergency event ends now: ${receivedTele.time}`);
-          const key = `${emergencyEventKey}_${eventsCounter.current}`;
+          const key = `${AS.emergencyEvent}_${eventsCounter.current}`;
           try {
             const jsonValue = JSON.stringify({
               startTime: startTime.current,

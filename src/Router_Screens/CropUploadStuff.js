@@ -6,7 +6,7 @@ import RNFS from "react-native-fs";
 import { RNS3 } from "react-native-aws3";
 import { AWSkeys } from "../Assets/secrets";
 import AsyncStorage from "@react-native-community/async-storage";
-import { emergencyEventKey } from "../Assets/consts";
+import { AS } from "../Assets/consts";
 //
 const CropUploadStuff = () => {
   React.useEffect(() => {
@@ -25,7 +25,7 @@ const CropUploadStuff = () => {
       //
       for (let i = 1; i <= 300; i++) {
         try {
-          const eventKey = `${emergencyEventKey}_${i}`;
+          const eventKey = `${AS.emergencyEvent}_${i}`;
           const stringValue = await AsyncStorage.getItem(eventKey);
           if (!stringValue) {
             i = 301;
@@ -340,7 +340,7 @@ const CropUploadStuff = () => {
           for (let i = 1; i <= 300; i++) {
             let emergencyEvent = null;
             try {
-              const eventKey = `${emergencyEventKey}_${i}`;
+              const eventKey = `${AS.emergencyEvent}_${i}`;
               const stringValue = await AsyncStorage.getItem(eventKey);
               if (!stringValue) {
                 i = 301;

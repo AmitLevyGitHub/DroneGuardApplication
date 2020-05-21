@@ -11,14 +11,6 @@ export const socketServerURL = `http://${streamDeviceDomain}:${socketServerPort}
 export const streamURL = `rtsp://${streamDeviceDomain}:6554/stream1`;
 // export const streamURL = `rtmp://${streamDeviceDomain}/live/myVideo`;
 /**
- * files & asyncStorage constants
- */
-export const emergencyHeight = 10;
-export const emergencyEventKey = "@emergencyEvent";
-export const teleFile = "tele.txt";
-export const loggerFile = "logger.txt";
-export const appErrorsFile = "appErrorsFile.txt";
-/**
  * camera details
  */
 function lenFormula(f, Dxy) {
@@ -38,4 +30,36 @@ export const piCameraInfo = {
   yDimensions: 2.7, //mm
   horizontalDegree: { ...lenFormula(3.6, 3.6) },
   verticalDegree: { ...lenFormula(3.6, 2.7) },
+};
+/**
+ * navigation consts
+ */
+export const navConsts = {
+  emergencyHeight: 10,
+};
+/**
+ * screens
+ */
+export const S = {
+  load: "load",
+  login: "login",
+  home: "home",
+  stream: "stream",
+  upload: "upload",
+};
+/**
+ * files names
+ */
+export const FN = {
+  telemetry: "tele.txt",
+  logger: "logger.txt",
+  appErrors: "appErrors.txt",
+};
+/**
+ * async storage keys
+ */
+export const AS = {
+  emergencyEvent: "@emergencyEvent",
+  userToken: "@userToken",
+  uploadStatus: "@uploadStatus",
 };

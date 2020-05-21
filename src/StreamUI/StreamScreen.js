@@ -12,7 +12,6 @@ import {
 import { Provider, Modal } from "@ant-design/react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import Icon2 from "react-native-vector-icons/MaterialCommunityIcons";
-import KeepAwake from "react-native-keep-awake";
 import { NodePlayerView } from "react-native-nodemediaclient";
 //
 import useSaveStream from "../Hooks/useSaveStream";
@@ -21,7 +20,7 @@ import useScaleStream from "../Hooks/useScaleStream";
 import useSocket from "../Hooks/useSocket";
 import useTelemetry from "../Hooks/useTelemetry";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
-import { streamURL } from "../Assets/consts";
+import { streamURL, S } from "../Assets/consts";
 //
 const styles = StyleSheet.create({
   container: {
@@ -41,14 +40,7 @@ const styles = StyleSheet.create({
   },
 });
 //
-const StreamUI = (props) => {
-  //
-  React.useEffect(() => {
-    KeepAwake.activate();
-    return function cleanup() {
-      KeepAwake.deactivate();
-    };
-  }, []);
+const StreamScreen = (props) => {
   //socket
   const [socket] = useSocket();
   //telemetry
@@ -152,9 +144,9 @@ const StreamUI = (props) => {
               zIndex: 100,
             }}
           >
-            {/** Settings Screen */}
+            {/** Home Screen Button */}
             <TouchableWithoutFeedback
-              onPress={() => props.setScreen("welcome")}
+              onPress={() => props.setScreen(S.home)}
               style={{ zIndex: 100 }}
             >
               <View
@@ -372,7 +364,7 @@ const StreamUI = (props) => {
   );
 };
 //
-StreamUI.propTypes = {
+StreamScreen.propTypes = {
   setScreen: PropTypes.func.isRequired,
 };
-export default StreamUI;
+export default StreamScreen;

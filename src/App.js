@@ -1,17 +1,20 @@
-import React from 'react';
-import Orientation from 'react-native-orientation-locker';
-import FakeRouter from './FakeRouter_and_Screens/FakeRouter';
+import React from "react";
+import Orientation from "react-native-orientation-locker";
+import KeepAwake from "react-native-keep-awake";
+import Router from "./Router_Screens/Router";
 
 const App = () => {
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     Orientation.lockToLandscapeLeft();
+    KeepAwake.activate();
     return function cleanup() {
       Orientation.unlockAllOrientations();
+      KeepAwake.deactivate();
     };
   }, []);
   return (
     <React.Fragment>
-      <FakeRouter />
+      <Router />
     </React.Fragment>
   );
 };
