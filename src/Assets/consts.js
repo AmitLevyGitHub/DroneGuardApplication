@@ -4,7 +4,7 @@
 // export const streamDeviceDomain = "192.168.68.134";
 // export const streamDeviceDomain = "192.168.68.132";
 // export const streamDeviceDomain = "10.100.102.12";
-export const streamDeviceDomain = "10.100.102.15";
+export const streamDeviceDomain = "192.168.68.132";
 // export const streamDeviceDomain = "192.168.0.115";
 const socketServerPort = 4001;
 export const socketServerURL = `http://${streamDeviceDomain}:${socketServerPort}`;

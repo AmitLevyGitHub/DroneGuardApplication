@@ -11,31 +11,31 @@ import { emergencyEventKey } from "../Assets/consts";
 const CropUploadStuff = () => {
   React.useEffect(() => {
     (async () => {
-      const originalStat = await RNFS.stat(
-        RNFS.ExternalDirectoryPath + "/streamVideo.h264"
-      );
-      console.log("originalStat = " + JSON.stringify(originalStat, null, 2));
-      const convertedStat = await RNFS.stat(
-        RNFS.ExternalDirectoryPath + "/converted.mp4"
-      );
-      console.log("convertedStat = " + JSON.stringify(convertedStat, null, 2));
+      // const originalStat = await RNFS.stat(
+      //   RNFS.ExternalDirectoryPath + "/streamVideo.h264"
+      // );
+      // console.log("originalStat = " + JSON.stringify(originalStat, null, 2));
+      // const convertedStat = await RNFS.stat(
+      //   RNFS.ExternalDirectoryPath + "/converted.mp4"
+      // );
+      // console.log("convertedStat = " + JSON.stringify(convertedStat, null, 2));
       // const dirItems = await RNFS.readDir(RNFS.ExternalDirectoryPath);
       // console.log("dirItems = " + JSON.stringify(dirItems, null, 2));
       //
       //
-      for (let i = 1; i <= 200; i++) {
+      for (let i = 1; i <= 300; i++) {
         try {
           const eventKey = `${emergencyEventKey}_${i}`;
           const stringValue = await AsyncStorage.getItem(eventKey);
           if (!stringValue) {
-            i = 201;
+            i = 301;
             break;
           }
           const jsonValue = stringValue ? JSON.parse(stringValue) : null;
           console.log(`${eventKey} = ${stringValue}`);
         } catch (e) {
           // error reading value
-          i = 201;
+          i = 301;
         }
       }
     })();
@@ -319,28 +319,74 @@ const CropUploadStuff = () => {
       <Button
         title="trim telemetry"
         onPress={async () => {
-          const cutTelemetryName = `cutTelemetry_s${teleStartTime}_e${teleEndTime}.mp4`;
-          console.log(
-            `cutting telemetry from ${teleStartTime} to ${teleEndTime} and saving it with new name = ${cutTelemetryName}`
-          );
-          const cutTelemetryPath =
-            RNFS.ExternalDirectoryPath + "/" + cutTelemetryName;
           const srcTelemetryPath = RNFS.ExternalDirectoryPath + "/tele.txt";
+          let ALLtelemetry = null;
           try {
-            // const dataRead = await RNFS.read(srcTelemetryPath, 1, 0);
             let dataRead = "";
             dataRead = await RNFS.readFile(srcTelemetryPath);
             dataRead = dataRead.substring(0, dataRead.length - 1);
             dataRead = "[" + dataRead + "]";
             // console.log(dataRead);
-            const dataObj = JSON.parse(dataRead);
-            console.log(`tele count = ${dataObj.length}`);
+            ALLtelemetry = JSON.parse(dataRead);
+            console.log(`tele count = ${ALLtelemetry.length}`);
           } catch (e) {
             console.log(
               `ERROR reading file tele.txt: ${
                 e.hasOwnProperty("message") ? e.message : e
               }`
             );
+          }
+          //
+          for (let i = 1; i <= 300; i++) {
+            let emergencyEvent = null;
+            try {
+              const eventKey = `${emergencyEventKey}_${i}`;
+              const stringValue = await AsyncStorage.getItem(eventKey);
+              if (!stringValue) {
+                i = 301;
+                break;
+              }
+              emergencyEvent = stringValue ? JSON.parse(stringValue) : null;
+              console.log(`${eventKey} = ${stringValue}`);
+            } catch (e) {
+              // error reading value
+              i = 301;
+            }
+            //
+            //create file
+            let cutTele = "";
+            let lastTimeStamp = -1;
+            for (let i = 0; i < ALLtelemetry.length; i++) {
+              if (
+                ALLtelemetry[i].time >= emergencyEvent.startTime &&
+                ALLtelemetry[i].time < emergencyEvent.endTime
+              ) {
+                cutTele += JSON.stringify(ALLtelemetry[i]);
+                cutTele += ",";
+                lastTimeStamp = ALLtelemetry[i].time;
+              }
+              if (ALLtelemetry[i].time > emergencyEvent.endTime) {
+                break;
+              }
+            }
+            //remove last ","
+            cutTele = cutTele.substring(0, cutTele.length - 1);
+            cutTele = "[" + cutTele + "]";
+            //
+            //save file
+            const cutTelemetryName = `emergencyEventTelemetry_s${emergencyEvent.startTime}_e${lastTimeStamp}.json`;
+            console.log(
+              `cutting telemetry from ${teleStartTime} to ${teleEndTime} and saving it with new name = ${cutTelemetryName}`
+            );
+            const cutTelemetryPath =
+              RNFS.ExternalDirectoryPath + "/cutTele/" + cutTelemetryName;
+            try {
+              await RNFS.writeFile(cutTelemetryPath, cutTele);
+            } catch (error) {
+              console.log(
+                `error writing ${cutTelemetryPath} ERROR = ${error.message}`
+              );
+            }
           }
         }}
       />

@@ -25,14 +25,51 @@ export default function useTelemetry(socket) {
   //
   //
   React.useEffect(() => {
+    const save = false;
     if (!socket) return;
     socket.on("allTelemetry", (receivedTele) => {
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);
+      function scaleBat(
+        num,
+        in_min = 0,
+        in_max = 100,
+        out_min = 0,
+        out_max = 4
+      ) {
+        let scaled =
+          ((num - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
+        scaled = Math.floor(scaled);
+        if (scaled === 0) {
+          return "battery-empty";
+        } else if (scaled === 1) {
+          return "battery-quarter";
+        } else if (scaled === 2) {
+          return "battery-half";
+        } else if (scaled === 3) {
+          return "battery-three-quarters";
+        } else if (scaled === 4) {
+          return "battery-full";
+        }
+      }
+      function scaleWifi(
+        num,
+        in_min = 0,
+        in_max = 100,
+        out_min = 0,
+        out_max = 3
+      ) {
+        let scaled =
+          ((num - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
+        scaled = Math.floor(scaled);
+        return scaled;
+      }
       setDroneTele({
         time: receivedTele.time,
         batStatus: receivedTele.batStatus,
-        wifiSignal: receivedTele.wifiSignal,
+        batIcon: scaleBat(receivedTele.batStatus),
+        // wifiSignal: receivedTele.wifiSignal,
+        wifiIcon: scaleWifi(receivedTele.wifiSignal),
       });
       setGpsTele({
         time: receivedTele.time,
@@ -45,6 +82,7 @@ export default function useTelemetry(socket) {
        * save telemetry to file
        */
       (async () => {
+        if (!save) return;
         if (!receivedTele.hasOwnProperty("time")) return;
         const path = RNFS.ExternalDirectoryPath + "/tele.txt";
         const stringifiedTele = JSON.stringify(receivedTele);
@@ -60,6 +98,7 @@ export default function useTelemetry(socket) {
        * check isEmergency and save to asyncStorage
        */
       (async () => {
+        if (!save) return;
         if (!receivedTele.hasOwnProperty("time")) return;
         if (
           startTime.current === -1 &&

@@ -24,15 +24,15 @@ export default function useScaleStream(streamWidth, streamHeight) {
       windowWidth / streamWidth,
       windowHeight / streamHeight
     );
-    setScaledWidth(streamWidth * scale);
-    setScaledHeight(streamHeight * scale);
+    setScaledWidth(Math.floor(streamWidth * scale));
+    setScaledHeight(Math.floor(streamHeight * scale));
     console.log(`
       in useScaleStream.js
       windowWidth = ${windowWidth} -- streamWidth = ${streamWidth}
       windowHeight = ${windowHeight} -- streamHeight = ${streamHeight}
       scale = ${scale}
-      videoWidth = ${streamWidth * scale}
-      videoHeight = ${streamHeight * scale}
+      videoWidth = ${Math.floor(streamWidth * scale)}
+      videoHeight = ${Math.floor(streamHeight * scale)}
     `);
   }, [windowHeight, windowWidth, streamWidth, streamHeight]);
   //

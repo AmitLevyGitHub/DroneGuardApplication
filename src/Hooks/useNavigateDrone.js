@@ -69,27 +69,16 @@ export default function useNavigateDrone(socket, props) {
         Math.pow(widthToDstCM, 2) + Math.pow(heightToDstCM, 2)
       );
       //
-      let quadrant = -1;
-      if (axisX >= 0 && axisY >= 0) {
-        quadrant = 0;
-      } else if (axisX >= 0 && axisY < 0) {
-        quadrant = 90;
-      } else if (axisX < 0 && axisY < 0) {
-        quadrant = 180;
-      } else if (axisX < 0 && axisY >= 0) {
-        quadrant = 270;
-      }
-      const bearing =
-        (Math.atan(heightToDstCM / widthToDstCM) * (180 / Math.PI) +
-          quadrant +
-          props.droneBearing) %
-        360;
+      let degree = (Math.atan2(axisX, axisY) * 180) / Math.PI;
+      if (degree < 0) degree = 360 + degree;
+      const bearing = (degree + props.droneBearing) % 360;
       //
       console.log(`
         heightToDstCM = ${heightToDstCM}
         widthToDstCM = ${widthToDstCM}
         dstDiagonalCM = ${diagonal}
         dstBearing = ${bearing}
+        clickDegree = ${degree}
       `);
       return {
         dstDiagonalCM: diagonal,
@@ -98,18 +87,18 @@ export default function useNavigateDrone(socket, props) {
     }
     function calcDstCoordinate(diagonal, bearing) {
       const centerPoint = turf.point([
-        props.centerCoordinate.lat,
         props.centerCoordinate.lon,
+        props.centerCoordinate.lat,
       ]);
       const diagonalKM = diagonal / 100000;
       const destination = turf.destination(centerPoint, diagonalKM, bearing);
       console.log(`
-        dstCoordinate.lat = ${destination.geometry.coordinates[0]}
-        dstCoordinate.lon = ${destination.geometry.coordinates[1]}
+        dstCoordinate.lat = ${destination.geometry.coordinates[1]}
+        dstCoordinate.lon = ${destination.geometry.coordinates[0]}
       `);
       return {
-        lat: destination.geometry.coordinates[0],
-        lon: destination.geometry.coordinates[1],
+        lat: destination.geometry.coordinates[1],
+        lon: destination.geometry.coordinates[0],
       };
     }
     /**
@@ -142,8 +131,8 @@ export default function useNavigateDrone(socket, props) {
     };
   }, [axisX, axisY]);
   /**
-   * React Native Modal can't show for a given time
-   * need to do it with state change
+   * React Native Modal can't show itself for a given time
+   * must do it with explicit state change
    */
   React.useEffect(() => {
     let showStatusTimeout = null;
