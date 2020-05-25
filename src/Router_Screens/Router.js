@@ -37,22 +37,26 @@ const Router = () => {
           }`
         );
       }
+      if (!uploadStatus) {
+        uploadStatus = {
+          interrupted: false,
+        };
+      }
       //
       //navigate
       if (!userToken) {
         setScreen(S.login);
       } else {
-        if (uploadStatus && uploadStatus.hasOwnProperty("finished")) {
-          if (!uploadStatus.finished) {
-            setScreen(S.upload);
-          } else {
-            setScreen(S.home);
-          }
+        if (uploadStatus.interrupted) {
+          setScreen(S.upload);
         } else {
           setScreen(S.home);
         }
       }
     })();
+    // return function cleanup() {
+    //   console.log("Router.js unmount");
+    // };
   }, []);
   return (
     <React.Fragment>

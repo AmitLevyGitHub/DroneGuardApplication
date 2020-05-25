@@ -7,11 +7,20 @@ export default function useProbeStream(errorOccurred) {
   const [width, setWidth] = React.useState(960);
   const [height, setHeight] = React.useState(540);
   const [firstVideoStream, setFirstVideoStream] = React.useState({});
+  const [probeModalClosable, setClosable] = React.useState(false);
   React.useLayoutEffect(() => {
+    let isSubscribed = true;
+    let closeableTimeout = null;
     (async () => {
       setIsProbing(true);
       try {
         console.log(`start probing URL = ${streamingDevice.url}`);
+        //
+        const closableWaitTime = 5000;
+        closeableTimeout = setTimeout(() => {
+          if (isSubscribed) setClosable(true);
+        }, closableWaitTime);
+        //
         const streamInfo = await RNFFprobe.getMediaInformation(
           streamingDevice.url
         );
@@ -34,6 +43,11 @@ export default function useProbeStream(errorOccurred) {
       }
       setIsProbing(false);
     })();
+    return function cleanup() {
+      isSubscribed = false;
+      if (closeableTimeout) clearTimeout(closeableTimeout);
+    };
   }, [errorOccurred]);
-  return [isProbing, width, height];
+  //
+  return [isProbing, width, height, probeModalClosable];
 }

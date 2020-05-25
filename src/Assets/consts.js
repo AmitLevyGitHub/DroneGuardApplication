@@ -17,13 +17,13 @@ export const navConsts = {
  * telemetry socket
  */
 export const telemetryDevice = {
-  ip: "192.168.68.132",
+  ip: "192.168.68.118",
   port: 2222,
 };
 /**
  * streaming & socket
  */
-const streamDeviceDomain = "192.168.68.132";
+const streamDeviceDomain = "192.168.68.118";
 // export const streamDeviceDomain = "192.168.68.134";
 // export const streamDeviceDomain = "192.168.68.132";
 // export const streamDeviceDomain = "10.100.102.12";
@@ -67,7 +67,8 @@ export const S = {
  * files names
  */
 export const FN = {
-  telemetry: "tele.txt",
+  telemetry: "allTelemetry.txt",
+  events: "emergencyEvents.txt",
   logger: "logger.txt",
   appErrors: "appErrors.txt",
 };
@@ -75,7 +76,8 @@ export const FN = {
  * async storage keys
  */
 export const AS = {
-  emergencyEvent: "@emergencyEvent",
   userToken: "@userToken",
   uploadStatus: "@uploadStatus",
+  //
+  emergencyEvent: "@emergencyEvent",
 };

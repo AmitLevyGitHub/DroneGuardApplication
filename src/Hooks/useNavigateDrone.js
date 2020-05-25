@@ -128,6 +128,7 @@ export default function useNavigateDrone(socket, props) {
         dstBearing,
       })
     );
+    console.log("will send navigateTo to server!");
     socket.send(
       msgToSend,
       0,
@@ -156,6 +157,7 @@ export default function useNavigateDrone(socket, props) {
   React.useEffect(() => {
     let showStatusTimeout = null;
     const showStatusTime = 5000;
+    let isSubscribed;
     if (showNavStatus) {
       (async () => {
         isSubscribed = true;

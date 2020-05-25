@@ -32,6 +32,9 @@ export default function useSocket() {
         }
       );
     });
+    return function cleanup() {
+      setSocket(null);
+    };
   }, []);
   //
   return [socket];

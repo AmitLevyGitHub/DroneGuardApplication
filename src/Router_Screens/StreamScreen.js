@@ -21,6 +21,8 @@ import useSocket from "../Hooks/useSocket";
 import useTelemetry from "../Hooks/useTelemetry";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
 import { streamingDevice, S } from "../Assets/consts";
+import JoystickRight from "../Joystick/JoystickRight";
+import JoystickLeft from "../Joystick/JoystickLeft";
 //
 const styles = StyleSheet.create({
   container: {
@@ -37,6 +39,7 @@ const styles = StyleSheet.create({
   },
   activityIndicator: {
     transform: [{ scale: 2 }],
+    marginTop: 20,
   },
 });
 //
@@ -47,8 +50,13 @@ const StreamScreen = (props) => {
   const [droneTele, gpsTele] = useTelemetry(socket);
   //stream
   const [myRef, setMyRef] = React.useState(null);
-  const [errorOccurred] = useSaveStream();
-  const [isProbing, streamWidth, streamHeight] = useProbeStream(errorOccurred);
+  const [errorOccurred] = useSaveStream(socket);
+  const [
+    isProbing,
+    streamWidth,
+    streamHeight,
+    probeModalClosable,
+  ] = useProbeStream(errorOccurred);
   const [scaledWidth, scaledHeight] = useScaleStream(streamWidth, streamHeight);
   //navigation handler
   const [
@@ -69,12 +77,15 @@ const StreamScreen = (props) => {
   return (
     <Provider>
       <View style={styles.container}>
-        {/** loading video modal */}
+        {/** video loading modal */}
         <Modal
           animationType="fade"
           transparent={true}
           visible={isProbing}
+          closable={probeModalClosable}
+          maskClosable={false}
           title="Connecting To Drone Camera"
+          style={{ minWidth: 360 }}
         >
           <View style={{ paddingVertical: 20 }}>
             <ActivityIndicator
@@ -259,21 +270,7 @@ const StreamScreen = (props) => {
             }}
           >
             {/** 2D navigation pad */}
-            <View
-              style={{
-                zIndex: 100,
-                borderColor: "white",
-                height: 130,
-                width: 130,
-                borderRadius: 240,
-                borderWidth: 5,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Icon solid name="arrows-alt" solid color="white" size={80} />
-            </View>
+            <JoystickLeft socket={socket} />
             {/** Back home */}
             <TouchableWithoutFeedback
               style={{ zIndex: 100 }}
@@ -289,21 +286,7 @@ const StreamScreen = (props) => {
               />
             </TouchableWithoutFeedback>
             {/** 3D navigation pad */}
-            <View
-              style={{
-                zIndex: 100,
-                borderColor: "white",
-                height: 130,
-                width: 130,
-                borderRadius: 240,
-                borderWidth: 5,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Icon solid name="arrows-alt-v" solid color="white" size={80} />
-            </View>
+            <JoystickRight socket={socket} />
           </View>
           {/** Home Indication */}
           <View
@@ -353,8 +336,8 @@ const StreamScreen = (props) => {
                 {navigationStatus.reachedCoordinate.lat},{" "}
                 {navigationStatus.reachedCoordinate.lon})
               </Text>
-              {navigationStatus.reasons.map((reason) => (
-                <Text>{reason}</Text>
+              {navigationStatus.reasons.map((reason, i) => (
+                <Text key={i}>{reason}</Text>
               ))}
             </View>
           </Modal>

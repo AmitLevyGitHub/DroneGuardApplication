@@ -1,7 +1,6 @@
 import React from "react";
 import RNFS from "react-native-fs";
-import AsyncStorage from "@react-native-community/async-storage";
-import { FN, AS, navConsts, shouldSave } from "../Assets/consts";
+import { FN, navConsts, shouldSave } from "../Assets/consts";
 export default function useTelemetry(socket) {
   //tele
   const [droneTele, setDroneTele] = React.useState({
@@ -83,18 +82,18 @@ export default function useTelemetry(socket) {
       (async () => {
         if (!save) return;
         if (!receivedTele.hasOwnProperty("time")) return;
-        const path = RNFS.ExternalDirectoryPath + "/tele.txt";
+        const path = RNFS.ExternalDirectoryPath + "/" + FN.telemetry;
         const stringifiedTele = JSON.stringify(receivedTele);
         RNFS.appendFile(path, stringifiedTele + ",")
           .then(() => {
-            // console.log("FILE WRITTEN!");
+            //
           })
           .catch((err) => {
             console.log(err.message);
           });
       })();
       /**
-       * check isEmergency and save to asyncStorage
+       * check isEmergency and save to events file
        */
       (async () => {
         if (!save) return;
@@ -111,21 +110,18 @@ export default function useTelemetry(socket) {
           receivedTele.altitude > navConsts.emergencyHeight
         ) {
           console.log(`emergency event ends now: ${receivedTele.time}`);
-          const key = `${AS.emergencyEvent}_${eventsCounter.current}`;
-          try {
-            const jsonValue = JSON.stringify({
-              startTime: startTime.current,
-              endTime: receivedTele.time,
+          const path = RNFS.ExternalDirectoryPath + "/" + FN.events;
+          const stringifiedEvent = JSON.stringify({
+            startTime: startTime.current,
+            endTime: receivedTele.time,
+          });
+          RNFS.appendFile(path, stringifiedEvent + ",")
+            .then(() => {
+              console.log(`emergency event saved to file!`);
+            })
+            .catch((err) => {
+              console.log(err.message);
             });
-            await AsyncStorage.setItem(key, jsonValue);
-            console.log(`${key} saved to asyncStorage`);
-          } catch (e) {
-            console.log(
-              `ERROR saving ${key} to async storage! ${
-                e.hasOwnProperty("message") ? e.message : e
-              }`
-            );
-          }
           startTime.current = -1;
           eventsCounter.current++;
         }
