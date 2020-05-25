@@ -91,12 +91,26 @@ export default function usePrepareUpload() {
         startTime: event.startTime,
         endTime: event.endTime,
         index: i,
-        eventID: null,
         lifeGuardID: null,
         beachID: null,
-        videoURL: null,
-        telemetryURL: null,
-        thumbnailURL: null,
+        //
+        folderName: null,
+        ID: null,
+        telemetry: {
+          name: null,
+          isUpload: false,
+          URL: null,
+        },
+        thumbnail: {
+          name: null,
+          isUpload: false,
+          URL: null,
+        },
+        video: {
+          name: null,
+          isUpload: false,
+          URL: null,
+        },
       }));
       setEventsStatus(t);
       //

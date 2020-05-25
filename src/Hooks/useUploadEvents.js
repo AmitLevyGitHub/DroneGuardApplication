@@ -22,17 +22,19 @@ async function handleEventFake(event) {
   await sleep(2000);
 }
 async function handleEvent(event) {
+  
   /**
    * create event in DB
    */
-  //create
-  //remember eventID
-  /**
-   * create event directory on device
-   */
+  if (!event.ID) {
+    //create
+    //remember eventID
+    //create event directory on device
+  }
   /**
    * trim video
    */
+  if (!)
   //trim
   /**
    *
