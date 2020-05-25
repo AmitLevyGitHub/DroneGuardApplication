@@ -113,6 +113,15 @@ export default function usePrepareUpload() {
         },
       }));
       setEventsStatus(t);
+      try {
+        await AsyncStorage.setItem(AS.uploadStatus, JSON.stringify(t));
+      } catch (e) {
+        console.log(
+          `ERROR setting ${AS.uploadStatus} in async storage!\n${
+            e.hasOwnProperty("message") ? e.message : e
+          }`
+        );
+      }
       //
       isSubscribed && setPreparing(false);
     })();
