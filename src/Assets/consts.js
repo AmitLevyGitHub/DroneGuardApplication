@@ -3,9 +3,9 @@
  */
 export const shouldSave = {
   // tele: false,
-  tele: true,
+  tele: false,
   // video: false,
-  video: true,
+  video: false,
 };
 export const isUploadDisabled = true;
 export const forceUpload = false;
