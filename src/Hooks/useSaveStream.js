@@ -4,7 +4,7 @@
 import React from "react";
 import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
-import { streamingDevice, shouldSave } from "../Assets/consts";
+import { FN, streamingDevice, shouldSave } from "../Assets/consts";
 //
 export default function useSaveStream(socket) {
   const [errorOccurred, setErrorOccurred] = React.useState(false);
@@ -28,7 +28,7 @@ export default function useSaveStream(socket) {
       //
       //save the video stream
       try {
-        const videoPath = `${RNFS.ExternalDirectoryPath}/streamVideo.avi`;
+        const videoPath = `${RNFS.ExternalDirectoryPath}/${FN.video}`;
         const FFMPEGcommand = `-i ${streamingDevice.url} -b:v 1000000 -c:v copy -an -r 60 -y ${videoPath}`;
         // const FFMPEGcommand = `-i ${streamingDevice.url} -b:v 1000000 -c:v copy -r 60 -y ${videoPath}`;
         // const FFMPEGcommand = `-i ${streamingDevice.url} -c:v copy ${videoPath}`;
