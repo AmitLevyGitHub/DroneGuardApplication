@@ -37,7 +37,7 @@ const Router = () => {
           }`
         );
       }
-      if (!uploadStatus) {
+      if (!uploadStatus || !uploadStatus.hasOwnProperty("interrupted")) {
         uploadStatus = {
           interrupted: false,
         };
@@ -54,9 +54,6 @@ const Router = () => {
         }
       }
     })();
-    // return function cleanup() {
-    //   console.log("Router.js unmount");
-    // };
   }, []);
   return (
     <React.Fragment>

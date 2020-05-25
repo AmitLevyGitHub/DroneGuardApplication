@@ -13,6 +13,7 @@ import { Provider, Modal } from "@ant-design/react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import Icon2 from "react-native-vector-icons/MaterialCommunityIcons";
 import { NodePlayerView } from "react-native-nodemediaclient";
+import AsyncStorage from "@react-native-community/async-storage";
 //
 import useSaveStream from "../Hooks/useSaveStream";
 import useProbeStream from "../Hooks/useProbeStream";
@@ -20,7 +21,7 @@ import useScaleStream from "../Hooks/useScaleStream";
 import useSocket from "../Hooks/useSocket";
 import useTelemetry from "../Hooks/useTelemetry";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
-import { streamingDevice, S } from "../Assets/consts";
+import { streamingDevice, S, AS, forceUpload } from "../Assets/consts";
 import JoystickRight from "../Joystick/JoystickRight";
 import JoystickLeft from "../Joystick/JoystickLeft";
 //
@@ -65,6 +66,7 @@ const StreamScreen = (props) => {
     isNavigating,
     showNavStatus,
     navigationStatus,
+    navigatingModalClosable,
   ] = useNavigateDrone(socket, {
     scaledWidth,
     scaledHeight,
@@ -74,6 +76,24 @@ const StreamScreen = (props) => {
   });
   //navigation status feedback, allowing the user to close it
   const [isStatusModal, setIsStatusModal] = React.useState(true);
+  //
+  //on exit mark in async storage so user must upload data before using again
+  React.useEffect(() => {
+    return async function cleanup() {
+      try {
+        await AsyncStorage.setItem(
+          AS.uploadStatus,
+          JSON.stringify({ interrupted: true })
+        );
+      } catch (e) {
+        // saving error
+        console.log(
+          `error setting ${AS.uploadStatus} to true! Stream UI will not be blocked\n${e.message}`
+        );
+      }
+    };
+  }, []);
+  //
   return (
     <Provider>
       <View style={styles.container}>
@@ -157,7 +177,13 @@ const StreamScreen = (props) => {
           >
             {/** Home Screen Button */}
             <TouchableWithoutFeedback
-              onPress={() => props.setScreen(S.home)}
+              onPress={() => {
+                if (forceUpload) {
+                  props.setScreen(S.upload);
+                } else {
+                  props.setScreen(S.home);
+                }
+              }}
               style={{ zIndex: 100 }}
             >
               <View
@@ -304,6 +330,8 @@ const StreamScreen = (props) => {
           <Modal
             animationType="fade"
             transparent={true}
+            closable={navigatingModalClosable}
+            maskClosable={false}
             visible={isNavigating}
             title="Navigating"
           >

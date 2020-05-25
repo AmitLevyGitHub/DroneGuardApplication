@@ -8,22 +8,23 @@ import { streamingDevice, shouldSave } from "../Assets/consts";
 //
 export default function useSaveStream(socket) {
   const [errorOccurred, setErrorOccurred] = React.useState(false);
-  const saveVideo = shouldSave.video;
   const shouldExecute = React.useRef(false);
   //
   React.useEffect(() => {
     (async () => {
+      const saveVideo = shouldSave.video;
       if (!saveVideo) return;
-      if (!socket) {
-        //save video only after telemetry socket is open
-        return;
-      } else {
-        //after it is open need to wait a bit
-        function sleep(ms) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-        await sleep(500);
-      }
+      if (!socket) return;
+      // if (!socket) {
+      //   //save video only after telemetry socket is open
+      //   return;
+      // } else {
+      //   //after it is open need to wait a bit
+      //   function sleep(ms) {
+      //     return new Promise((resolve) => setTimeout(resolve, ms));
+      //   }
+      //   await sleep(500);
+      // }
       //
       //save the video stream
       try {
@@ -42,12 +43,12 @@ export default function useSaveStream(socket) {
       }
     })();
     //
-    return async function cleanup() {
+    return function cleanup() {
       if (!shouldExecute.current) return;
       console.log("\n\n\n\n\nCalling RNFFmpeg.cancel()");
       RNFFmpeg.cancel();
     };
-  }, [socket, saveVideo]);
+  }, [socket]);
   //
   return [errorOccurred];
 }

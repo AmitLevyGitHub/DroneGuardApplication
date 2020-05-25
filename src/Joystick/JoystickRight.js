@@ -2,26 +2,23 @@ import React from "react";
 import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 
-const JoystickRight = () => {
-  const handlePressUp = () => {
-    console.log("Up");
-  };
-
-  const handlePressDown = () => {
-    console.log("Down");
-  };
-
-  const handlePressspinLeft = () => {
-    console.log("Spin Left");
-  };
-
-  const handlePressspinRight = () => {
-    console.log("Spin Right");
-  };
-
+const JoystickRight = (props) => {
+  const { socket } = props;
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.btnContainer} onPress={handlePressUp}>
+      <TouchableOpacity
+        style={styles.btnContainer}
+        onPress={() => {
+          if (!socket) {
+            console.log(
+              "trying to emit up event to server but socket not open"
+            );
+            return;
+          }
+          const emitTime = Date.now();
+          socket.emit("up", emitTime);
+        }}
+      >
         <View style={[styles.btn, styles.btnUp]} />
         <View style={[styles.btnLittle, styles.btnUpLittle]} />
       </TouchableOpacity>
@@ -30,7 +27,16 @@ const JoystickRight = () => {
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnSpinLeft]}
-            onPress={handlePressspinLeft}
+            onPress={() => {
+              if (!socket) {
+                console.log(
+                  "trying to emit spinLeft event to server but socket not open"
+                );
+                return;
+              }
+              const emitTime = Date.now();
+              socket.emit("spinLeft", emitTime);
+            }}
           >
             <View style={[styles.spinBtnArrow, styles.spinBtnArrowLeft]} />
           </TouchableOpacity>
@@ -39,7 +45,16 @@ const JoystickRight = () => {
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnSpinRight]}
-            onPress={handlePressspinRight}
+            onPress={() => {
+              if (!socket) {
+                console.log(
+                  "trying to emit spinRight event to server but socket not open"
+                );
+                return;
+              }
+              const emitTime = Date.now();
+              socket.emit("spinRight", emitTime);
+            }}
           >
             <View style={[styles.spinBtnArrow, styles.spinBtnArrowRight]} />
             {/* <View style={[styles.spinBtnArrow, styles.spinBtnArrowLeft]} /> */}
@@ -48,7 +63,16 @@ const JoystickRight = () => {
       </View>
       <TouchableOpacity
         style={[styles.btnContainer, styles.btnUpcontainer]}
-        onPress={handlePressDown}
+        onPress={() => {
+          if (!socket) {
+            console.log(
+              "trying to emit down event to server but socket not open"
+            );
+            return;
+          }
+          const emitTime = Date.now();
+          socket.emit("down", emitTime);
+        }}
       >
         <View style={[styles.btnLittle, styles.btnDownLittle]} />
         <View style={[styles.btn, styles.btnDown]} />

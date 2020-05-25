@@ -2,30 +2,24 @@ import React from "react";
 import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 
-const JoystickLeft = () => {
-  const handlePressFw = () => {
-    console.log("Forward");
-  };
-
-  const handlePressBack = () => {
-    console.log("Back");
-  };
-
-  const handlePressLeft = () => {
-    console.log("Left");
-  };
-
-  const handlePressRight = () => {
-    console.log("Right");
-  };
-
+const JoystickLeft = (props) => {
+  const { socket } = props;
   return (
     <View style={styles.container}>
       <View style={styles.btnUpContainer}>
         <TouchableOpacity
           title=""
           style={[styles.btn, styles.btnUp]}
-          onPress={handlePressFw}
+          onPress={() => {
+            if (!socket) {
+              console.log(
+                "trying to emit forward event to server but socket not open"
+              );
+              return;
+            }
+            const emitTime = Date.now();
+            socket.emit("forward", emitTime);
+          }}
         />
       </View>
       <View style={styles.btnLeftRightContainer}>
@@ -33,14 +27,32 @@ const JoystickLeft = () => {
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnLeft]}
-            onPress={handlePressLeft}
+            onPress={() => {
+              if (!socket) {
+                console.log(
+                  "trying to emit left event to server but socket not open"
+                );
+                return;
+              }
+              const emitTime = Date.now();
+              socket.emit("left", emitTime);
+            }}
           />
         </View>
         <View style={styles.btnRightContainer}>
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnRight]}
-            onPress={handlePressRight}
+            onPress={() => {
+              if (!socket) {
+                console.log(
+                  "trying to emit right event to server but socket not open"
+                );
+                return;
+              }
+              const emitTime = Date.now();
+              socket.emit("right", emitTime);
+            }}
           />
         </View>
       </View>
@@ -49,7 +61,16 @@ const JoystickLeft = () => {
         <TouchableOpacity
           title=""
           style={[styles.btn, styles.btnDown]}
-          onPress={handlePressBack}
+          onPress={() => {
+            if (!socket) {
+              console.log(
+                "trying to emit backward event to server but socket not open"
+              );
+              return;
+            }
+            const emitTime = Date.now();
+            socket.emit("backward", emitTime);
+          }}
         />
       </View>
       {/* </View> */}

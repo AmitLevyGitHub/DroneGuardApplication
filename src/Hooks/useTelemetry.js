@@ -21,11 +21,8 @@ export default function useTelemetry(socket) {
   React.useEffect(() => {
     const save = shouldSave.tele;
     if (!socket) return;
-    socket.on("message", (msg) => {
-      const M = JSON.parse(msg.toString());
-      if (M.type !== "allTelemetry") return;
+    socket.on("allTelemetry", (receivedTele) => {
       // console.log(`data received with altitude = ${M.altitude}`);
-      const receivedTele = { ...M };
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);
       function scaleBat(

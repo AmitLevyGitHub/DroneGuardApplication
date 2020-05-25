@@ -7,6 +7,8 @@ export const shouldSave = {
   // video: false,
   video: true,
 };
+export const isUploadDisabled = true;
+export const forceUpload = false;
 /**
  * navigation consts
  */
@@ -64,13 +66,16 @@ export const S = {
   upload: "upload",
 };
 /**
- * files names
+ * files & directories names
  */
+const videoFormat = "avi";
 export const FN = {
+  video: `streamVideo.${videoFormat}`,
   telemetry: "allTelemetry.txt",
   events: "emergencyEvents.txt",
   logger: "logger.txt",
   appErrors: "appErrors.txt",
+  eventDirectory: "eventDirectory",
 };
 /**
  * async storage keys

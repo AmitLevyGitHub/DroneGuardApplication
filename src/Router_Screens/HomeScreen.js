@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Button, Text, View, TouchableOpacity } from "react-native";
-import { S, AS } from "../Assets/consts";
+import { S, AS, isUploadDisabled } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
 //
 const HomeScreen = (props) => {
@@ -47,6 +47,7 @@ const HomeScreen = (props) => {
         <Text style={{ fontSize: 30 }}>Welcome to DroneGuard app</Text>
         <Button
           title="upload events"
+          disabled={isUploadDisabled}
           onPress={async () => props.setScreen(S.upload)}
         />
         <Button
