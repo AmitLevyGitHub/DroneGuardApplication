@@ -20,14 +20,15 @@ export const navConsts = {
  */
 export const telemetryDevice = {
   // ip: "192.168.68.118",
-  ip: "192.168.0.100",
+  ip: "192.168.0.150",
   // port: 2222,
   port: 3000,
 };
 /**
  * streaming & socket
  */
-const streamDeviceDomain = "192.168.68.118";
+// const streamDeviceDomain = "192.168.68.118";
+const streamDeviceDomain = "192.168.0.150";
 // export const streamDeviceDomain = "192.168.68.134";
 // export const streamDeviceDomain = "192.168.68.132";
 // export const streamDeviceDomain = "10.100.102.12";
