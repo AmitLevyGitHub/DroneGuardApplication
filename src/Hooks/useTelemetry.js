@@ -4,8 +4,8 @@ import { FN, navConsts, shouldSave } from "../Assets/consts";
 export default function useTelemetry(socket) {
   //tele
   const [droneTele, setDroneTele] = React.useState({
-    batStatus: 0,
-    wifiSignal: 0,
+    batStatus: 100,
+    wifiSignal: 90,
   });
   const [gpsTele, setGpsTele] = React.useState({
     latitude: -1.0,

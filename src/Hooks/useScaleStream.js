@@ -17,8 +17,9 @@ export default function useScaleStream(streamWidth, streamHeight) {
     };
   }, []);
   //
-  const [scaledWidth, setScaledWidth] = React.useState(0);
-  const [scaledHeight, setScaledHeight] = React.useState(0);
+  const { width, height } = Dimensions.get("window");
+  const [scaledWidth, setScaledWidth] = React.useState(width);
+  const [scaledHeight, setScaledHeight] = React.useState(height);
   React.useLayoutEffect(() => {
     const scale = Math.min(
       windowWidth / streamWidth,

@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 
-const JoystickRight = (props) => {
+const JoystickRight = props => {
   const { setNavCommand } = props;
   return (
     <View style={styles.container}>
@@ -13,29 +13,8 @@ const JoystickRight = (props) => {
         <View style={[styles.btn, styles.btnUp]} />
         <View style={[styles.btnLittle, styles.btnUpLittle]} />
       </TouchableOpacity>
-      <View style={styles.btnSpinLeftRightContainer}>
-        <View style={styles.btnSpinLeftContainer}>
-          <TouchableOpacity
-            title=""
-            style={[styles.btn, styles.btnSpinLeft]}
-            onPress={() => setNavCommand("spinLeft")}
-          >
-            <View style={[styles.spinBtnArrow, styles.spinBtnArrowLeft]} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.btnRightContainer}>
-          <TouchableOpacity
-            title=""
-            style={[styles.btn, styles.btnSpinRight]}
-            onPress={() => setNavCommand("spinRight")}
-          >
-            <View style={[styles.spinBtnArrow, styles.spinBtnArrowRight]} />
-            {/* <View style={[styles.spinBtnArrow, styles.spinBtnArrowLeft]} /> */}
-          </TouchableOpacity>
-        </View>
-      </View>
       <TouchableOpacity
-        style={[styles.btnContainer, styles.btnUpcontainer]}
+        style={[styles.btnContainer, styles.btnUpContainer]}
         onPress={() => setNavCommand("down")}
       >
         <View style={[styles.btnLittle, styles.btnDownLittle]} />
@@ -47,18 +26,18 @@ const JoystickRight = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 200,
-    height: 200,
-    borderWidth: 8,
+    width: 50,
+    height: 120,
+    borderWidth: 4,
     borderStyle: "solid",
     borderColor: "#fff",
     borderRadius: 300,
-    justifyContent: "space-between",
+    justifyContent: "space-between"
   },
   btn: {
-    width: 30,
-    height: 30,
-    borderStyle: "solid",
+    width: 20,
+    height: 20,
+    borderStyle: "solid"
   },
   // spinBtn: {
   //     width: 30,
@@ -67,12 +46,15 @@ const styles = StyleSheet.create({
   // },
   btnContainer: {
     width: "100%",
-    height: "30%",
-    // backgroundColor: "blue"
+    height: "50%",
+    justifyContent: "center",
+    //backgroundColor: "blue"
   },
-  btnDowncontainer: {
+  btnDownContainer: {
+    justifyContent: "center",
+    alignItems: "flex-end",
     transform: [{ rotate: "180deg" }],
-    // backgroundColor: "blue"
+    //backgroundColor: "red"
   },
   btnUp: {
     // backgroundColor: "blue",
@@ -84,10 +66,10 @@ const styles = StyleSheet.create({
     borderBottomColor: "#fff",
     borderLeftWidth: 0,
     borderLeftColor: "transparent",
-    marginTop: 20,
+    //marginTop: 15,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "-135deg" }],
+    transform: [{ rotate: "-135deg" }]
   },
   btnDown: {
     // backgroundColor: "blue",
@@ -99,15 +81,15 @@ const styles = StyleSheet.create({
     borderBottomColor: "#fff",
     borderLeftWidth: 0,
     borderLeftColor: "transparent",
-    marginBottom: 20,
+    //marginTop: 15,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "45deg" }],
+    transform: [{ rotate: "45deg" }]
   },
   btnLittle: {
-    width: 25,
-    height: 25,
-    borderStyle: "solid",
+    width: 15,
+    height: 15,
+    borderStyle: "solid"
   },
   btnUpLittle: {
     borderTopWidth: 0,
@@ -118,10 +100,10 @@ const styles = StyleSheet.create({
     borderBottomColor: "#fff",
     borderLeftWidth: 0,
     borderLeftColor: "transparent",
-    marginTop: -18,
+    marginTop: -12,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "-135deg" }],
+    transform: [{ rotate: "-135deg" }]
   },
   btnDownLittle: {
     borderTopWidth: 0,
@@ -132,71 +114,13 @@ const styles = StyleSheet.create({
     borderBottomColor: "#fff",
     borderLeftWidth: 0,
     borderLeftColor: "transparent",
-    marginBottom: -18,
+    marginBottom: -12,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "45deg" }],
-  },
-  btnSpinLeftRightContainer: {
-    flexDirection: "row",
-    width: "100%",
-    height: "30%",
-    justifyContent: "space-between",
-    alignItems: "center",
-    // backgroundColor: "red"
-  },
-  btnSpinLeft: {
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-    borderTopColor: "#fff",
-    borderRightColor: "#fff",
-    borderRadius: 20,
-    marginLeft: 15,
-  },
-  btnSpinRight: {
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-    borderTopColor: "#fff",
-    borderLeftColor: "#fff",
-    borderRadius: 30,
-    marginRight: 15,
-  },
-  spinBtnArrow: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopWidth: 10,
-    borderTopColor: "transparent",
-    borderLeftWidth: 10,
-    borderLeftColor: "#fff",
-    borderBottomWidth: 10,
-    borderBottomColor: "transparent",
-  },
-  spinBtnArrowLeft: {
-    marginRight: 40,
-    marginLeft: -5,
-    transform: [{ rotate: "125deg" }],
-  },
-  spinBtnArrowRight: {
-    marginLeft: 20,
-    marginRight: -5,
-    transform: [{ rotate: "60deg" }],
-  },
-  btnRightContainer: {
-    justifyContent: "center",
-  },
-  btnRight: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopWidth: 20,
-    borderTopColor: "transparent",
-    borderLeftWidth: 20,
-    borderLeftColor: "#fff",
-    borderBottomWidth: 20,
-    borderBottomColor: "transparent",
-    marginRight: 15,
-  },
+    transform: [{ rotate: "45deg" }]
+  }
 });
 JoystickRight.propTypes = {
-  setNavCommand: PropTypes.func.isRequired,
+  setNavCommand: PropTypes.func.isRequired
 };
 export default JoystickRight;
