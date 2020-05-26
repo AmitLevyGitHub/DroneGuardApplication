@@ -11,8 +11,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Provider, Modal } from "@ant-design/react-native";
-import Icon from "react-native-vector-icons/FontAwesome5";
-import Icon2 from "react-native-vector-icons/MaterialCommunityIcons";
+// import Icon from "react-native-vector-icons/FontAwesome5";
+// import Icon2 from "react-native-vector-icons/MaterialCommunityIcons";
 import { NodePlayerView } from "react-native-nodemediaclient";
 import AsyncStorage from "@react-native-community/async-storage";
 //
@@ -257,13 +257,13 @@ const StreamScreen = (props) => {
                 >
                   {droneTele.batStatus}%
                 </Text>
-                <Icon
+                {/*<Icon
                   style={{ transform: [{ rotate: "-90deg" }] }}
                   name={droneTele.batIcon}
                   solid
                   color="white"
                   size={30}
-                />
+                />*/}
               </React.Fragment>
               {droneTele.wifiIcon === 0 && (
                 <Image
@@ -289,7 +289,7 @@ const StreamScreen = (props) => {
                   style={{ width: 920 / 10, height: 392 / 10 }}
                 />
               )}
-              <Icon name="map-marker-alt" solid color="white" size={30} />
+              {/*<Icon name="map-marker-alt" solid color="white" size={30} />*/}
             </View>
           </View>
           {/** Last Row */}
@@ -372,7 +372,8 @@ const StreamScreen = (props) => {
             }}
             pointerEvents="none"
           >
-            <Icon2 name="target" color="white" solid size={50} />
+            {/*<Icon2 name="target" color="white" solid size={50} />*/}
+            <Text>O</Text>
           </View>
           {/** Navigation in process Modal */}
           <Modal
