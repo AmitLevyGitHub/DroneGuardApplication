@@ -3,9 +3,9 @@
  */
 export const shouldSave = {
   // tele: false,
-  tele: false,
+  tele: true,
   // video: false,
-  video: false,
+  video: true,
 };
 export const isUploadDisabled = true;
 export const forceUpload = false;
@@ -13,7 +13,7 @@ export const forceUpload = false;
  * navigation consts
  */
 export const navConsts = {
-  emergencyHeight: 10,
+  emergencyHeight: 600,
 };
 /**
  * telemetry socket
@@ -71,7 +71,7 @@ export const S = {
 /**
  * files & directories names
  */
-const videoFormat = "avi";
+const videoFormat = "mp4";
 export const FN = {
   video: `streamVideo.${videoFormat}`,
   telemetry: "allTelemetry.txt",

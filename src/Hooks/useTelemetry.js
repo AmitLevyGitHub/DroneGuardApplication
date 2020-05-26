@@ -23,7 +23,7 @@ export default function useTelemetry(socket) {
     if (!socket) return;
     // if (!socket.connected) return;
     socket.on("allTelemetry", (receivedTele) => {
-      // console.log("on allTelemetry");
+      console.log("on allTelemetry");
       // console.log(`data received with altitude = ${M.altitude}`);
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);
@@ -81,6 +81,7 @@ export default function useTelemetry(socket) {
       /**
        * save telemetry to file
        */
+      console.log(`in allTelemetry save = ${save.toString()}`);
       (async () => {
         if (!save) return;
         if (!receivedTele.hasOwnProperty("time")) return;

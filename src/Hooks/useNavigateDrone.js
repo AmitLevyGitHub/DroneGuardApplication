@@ -61,12 +61,6 @@ export default function useNavigateDrone(socket, props) {
      * or until specific time passes
      */
     let closeableTimeout = null;
-    setClosable(false);
-    setNavigating(true);
-    const closableWaitTime = 3000;
-    closeableTimeout = setTimeout(() => {
-      setClosable(true);
-    }, closableWaitTime);
     /**
      * default commands
      */
@@ -80,6 +74,12 @@ export default function useNavigateDrone(socket, props) {
       /**
        * press commands
        */
+      setClosable(false);
+      setNavigating(true);
+      const closableWaitTime = 3000;
+      closeableTimeout = setTimeout(() => {
+        setClosable(true);
+      }, closableWaitTime);
       console.log(`
       starting navigation with data from drone:
       props.droneHeightCM = ${props.droneHeightCM}

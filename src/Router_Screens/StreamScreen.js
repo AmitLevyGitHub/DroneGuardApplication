@@ -158,7 +158,7 @@ const StreamScreen = (props) => {
             bufferTime={100}
             maxBufferTime={1000}
             autoplay
-            onStatus={() => console.log("on status func")}
+            // onStatus={() => console.log("on status func")}
             renderType="SURFACEVIEW"
           />
         </TouchableWithoutFeedback>
@@ -309,6 +309,45 @@ const StreamScreen = (props) => {
           >
             {/** 2D navigation pad */}
             <JoystickLeft setNavCommand={setNavCommand} />
+            {/** special buttons */}
+            <View style={{ display: "flex", flexDirection: "column" }}>
+              {/** takeoff */}
+              <TouchableOpacity onPress={() => setNavCommand("takeoff")}>
+                <Text
+                  style={{
+                    backgroundColor: "white",
+                    color: "black",
+                    fontSize: 20,
+                  }}
+                >
+                  TAKEOFF
+                </Text>
+              </TouchableOpacity>
+              {/** emergency */}
+              <TouchableOpacity onPress={() => setNavCommand("emergency")}>
+                <Text
+                  style={{
+                    backgroundColor: "white",
+                    color: "black",
+                    fontSize: 20,
+                  }}
+                >
+                  EMERGENCY
+                </Text>
+              </TouchableOpacity>
+              {/** command */}
+              <TouchableOpacity onPress={() => setNavCommand("command")}>
+                <Text
+                  style={{
+                    backgroundColor: "white",
+                    color: "black",
+                    fontSize: 20,
+                  }}
+                >
+                  COMMAND
+                </Text>
+              </TouchableOpacity>
+            </View>
             {/** Land */}
             <TouchableWithoutFeedback
               style={{ zIndex: 100 }}
@@ -323,42 +362,7 @@ const StreamScreen = (props) => {
                 }}
               />
             </TouchableWithoutFeedback>
-            {/** takeoff */}
-            <TouchableOpacity onPress={() => setNavCommand("takeoff")}>
-              <Text
-                style={{
-                  backgroundColor: "white",
-                  color: "black",
-                  fontSize: 20,
-                }}
-              >
-                TAKEOFF
-              </Text>
-            </TouchableOpacity>
-            {/** emergency */}
-            <TouchableOpacity onPress={() => setNavCommand("emergency")}>
-              <Text
-                style={{
-                  backgroundColor: "white",
-                  color: "black",
-                  fontSize: 20,
-                }}
-              >
-                EMERGENCY
-              </Text>
-            </TouchableOpacity>
-            {/** command */}
-            <TouchableOpacity onPress={() => setNavCommand("command")}>
-              <Text
-                style={{
-                  backgroundColor: "white",
-                  color: "black",
-                  fontSize: 20,
-                }}
-              >
-                COMMAND
-              </Text>
-            </TouchableOpacity>
+
             {/** 3D navigation pad */}
             <JoystickRight setNavCommand={setNavCommand} />
           </View>
