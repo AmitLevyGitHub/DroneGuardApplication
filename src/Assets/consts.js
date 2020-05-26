@@ -13,7 +13,7 @@ export const forceUpload = false;
  * navigation consts
  */
 export const navConsts = {
-  emergencyHeight: 600,
+  emergencyHeight: 10,
 };
 /**
  * telemetry socket

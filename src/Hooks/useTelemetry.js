@@ -23,7 +23,12 @@ export default function useTelemetry(socket) {
     if (!socket) return;
     // if (!socket.connected) return;
     socket.on("allTelemetry", (receivedTele) => {
-      console.log("on allTelemetry");
+      console.log(
+        "on allTelemetry, height " +
+          receivedTele.height +
+          " startTime.current = " +
+          startTime.current
+      );
       // console.log(`data received with altitude = ${M.altitude}`);
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);
@@ -81,12 +86,11 @@ export default function useTelemetry(socket) {
       /**
        * save telemetry to file
        */
-      console.log(`in allTelemetry save = ${save.toString()}`);
+      let telemetryToSave = { ...receivedTele, time: now };
       (async () => {
         if (!save) return;
-        if (!receivedTele.hasOwnProperty("time")) return;
         const path = RNFS.ExternalDirectoryPath + "/" + FN.telemetry;
-        const stringifiedTele = JSON.stringify(receivedTele);
+        const stringifiedTele = JSON.stringify(telemetryToSave);
         RNFS.appendFile(path, stringifiedTele + ",")
           .then(() => {
             //
@@ -100,23 +104,22 @@ export default function useTelemetry(socket) {
        */
       (async () => {
         if (!save) return;
-        if (!receivedTele.hasOwnProperty("time")) return;
         if (
           startTime.current === -1 &&
-          receivedTele.altitude <= navConsts.emergencyHeight
+          telemetryToSave.height <= navConsts.emergencyHeight
         ) {
-          startTime.current = receivedTele.time;
-          console.log(`emergency event starting now: ${receivedTele.time}`);
+          startTime.current = telemetryToSave.time;
+          console.log(`emergency event starting now: ${telemetryToSave.time}`);
         }
         if (
           startTime.current > -1 &&
-          receivedTele.altitude > navConsts.emergencyHeight
+          telemetryToSave.height > navConsts.emergencyHeight
         ) {
-          console.log(`emergency event ends now: ${receivedTele.time}`);
+          console.log(`emergency event ends now: ${telemetryToSave.time}`);
           const path = RNFS.ExternalDirectoryPath + "/" + FN.events;
           const stringifiedEvent = JSON.stringify({
             startTime: startTime.current,
-            endTime: receivedTele.time,
+            endTime: telemetryToSave.time,
           });
           RNFS.appendFile(path, stringifiedEvent + ",")
             .then(() => {
