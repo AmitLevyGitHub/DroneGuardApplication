@@ -8,6 +8,7 @@ import {
   Text,
   ActivityIndicator,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
 import { Provider, Modal } from "@ant-design/react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -58,6 +59,10 @@ const StreamScreen = (props) => {
     streamHeight,
     probeModalClosable,
   ] = useProbeStream(errorOccurred);
+  const [probeModalVisible, setProbeModalVisible] = React.useState(true);
+  const [navigatingModalVisible, setNavigatingModalVisible] = React.useState(
+    true
+  );
   const [scaledWidth, scaledHeight] = useScaleStream(streamWidth, streamHeight);
   //navigation handler
   const [
@@ -101,11 +106,15 @@ const StreamScreen = (props) => {
         <Modal
           animationType="fade"
           transparent={true}
-          visible={isProbing}
+          visible={isProbing && probeModalVisible}
           closable={probeModalClosable}
           maskClosable={false}
           title="Connecting To Drone Camera"
           style={{ minWidth: 360 }}
+          onClose={() => {
+            console.log("probe modal on close");
+            setProbeModalVisible(false);
+          }}
         >
           <View style={{ paddingVertical: 20 }}>
             <ActivityIndicator
@@ -118,7 +127,15 @@ const StreamScreen = (props) => {
         {/** Video Stream component + touch handler */}
         <TouchableWithoutFeedback
           onPress={(e) => {
-            if (isNavigating || isProbing) return; //disable press input when navigation is happening!
+            if (!socket.connected) {
+              console.log(
+                "trying to emit type: press to server but socket is not open!"
+              );
+              return;
+            }
+            if (isNavigating && navigatingModalVisible) return;
+            if (isProbing && probeModalVisible) return;
+            // if (isNavigating || isProbing) return; //disable press input when navigation is happening!
             const axisX_res = e.nativeEvent.locationX - scaledWidth / 2;
             const axisY_res = (e.nativeEvent.locationY - scaledHeight / 2) * -1;
             setAxisX(axisX_res);
@@ -297,10 +314,19 @@ const StreamScreen = (props) => {
           >
             {/** 2D navigation pad */}
             <JoystickLeft socket={socket} />
-            {/** Back home */}
+            {/** Land */}
             <TouchableWithoutFeedback
               style={{ zIndex: 100 }}
-              onPress={() => console.log("Emergency Land")}
+              onPress={() => {
+                if (!socket.connected) {
+                  console.log(
+                    "trying to emit type: land to server but socket is not open!"
+                  );
+                  return;
+                }
+                console.log("sending type: land to server");
+                socket.emit("command", { type: "land" });
+              }}
             >
               <Image
                 source={require("../Assets/Icons/backHome.png")}
@@ -311,6 +337,29 @@ const StreamScreen = (props) => {
                 }}
               />
             </TouchableWithoutFeedback>
+            {/** connect to drone */}
+            <TouchableOpacity
+              onPress={() => {
+                if (!socket.connected) {
+                  console.log(
+                    "trying to emit type: takeoff to server but socket is not open!"
+                  );
+                  return;
+                }
+                console.log("sending type: takeoff to server");
+                socket.emit("command", { type: "takeoff" });
+              }}
+            >
+              <Text
+                style={{
+                  backgroundColor: "white",
+                  color: "black",
+                  fontSize: 20,
+                }}
+              >
+                TAKEOFF
+              </Text>
+            </TouchableOpacity>
             {/** 3D navigation pad */}
             <JoystickRight socket={socket} />
           </View>
@@ -332,8 +381,9 @@ const StreamScreen = (props) => {
             transparent={true}
             closable={navigatingModalClosable}
             maskClosable={false}
-            visible={isNavigating}
+            visible={isNavigating && navigatingModalVisible}
             title="Navigating"
+            onClose={() => setNavigatingModalVisible(false)}
           >
             <View style={{ paddingVertical: 20 }}>
               <ActivityIndicator size="large" color="#0077be" />

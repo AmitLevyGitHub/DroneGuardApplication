@@ -86,6 +86,7 @@ export default function useNavigateDrone(socket, props) {
       return {
         dstDiagonalCM: diagonal,
         dstBearing: bearing,
+        degree,
       };
     }
     function calcDstCoordinate(diagonal, bearing) {
@@ -123,12 +124,15 @@ export default function useNavigateDrone(socket, props) {
       props.centerCoordinate.lon = ${props.centerCoordinate.lon}
     `);
     const footprintCM = calcFootprint();
-    const { dstDiagonalCM, dstBearing } = calcDiagonalAndBearing(footprintCM);
+    const { dstDiagonalCM, dstBearing, degree } = calcDiagonalAndBearing(
+      footprintCM
+    );
     const dstCoordinate = calcDstCoordinate(dstDiagonalCM, dstBearing);
-    socket.emit("navigateTo", {
-      targetCoordinate: dstCoordinate,
-      dstDiagonalCM,
-      dstBearing,
+    console.log("emitting type: press to server");
+    socket.emit("command", {
+      type: "press",
+      distance: dstDiagonalCM,
+      degree,
     });
   }, [axisX, axisY]);
   /**

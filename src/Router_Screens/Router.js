@@ -7,6 +7,7 @@ import UploadScreen from "./UploadScreen";
 import StreamScreen from "./StreamScreen";
 import AsyncStorage from "@react-native-community/async-storage";
 global.Buffer = global.Buffer || require("buffer").Buffer;
+import { forceUpload } from "../Assets/consts";
 //
 const Router = () => {
   const [screen, setScreen] = React.useState("load");
@@ -47,7 +48,7 @@ const Router = () => {
       if (!userToken) {
         setScreen(S.login);
       } else {
-        if (uploadStatus.interrupted) {
+        if (forceUpload && uploadStatus.interrupted) {
           setScreen(S.upload);
         } else {
           setScreen(S.home);
