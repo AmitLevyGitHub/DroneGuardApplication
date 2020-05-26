@@ -10,7 +10,7 @@ export default function useTelemetry(socket) {
   const [gpsTele, setGpsTele] = React.useState({
     latitude: -1.0,
     longitude: -1.0,
-    altitude: -1.0,
+    altitude: 100,
     bearing: -1.0,
   });
   //emergency events detection
@@ -20,8 +20,10 @@ export default function useTelemetry(socket) {
   //
   React.useEffect(() => {
     const save = shouldSave.tele;
-    if (!socket.connected) return;
+    if (!socket) return;
+    // if (!socket.connected) return;
     socket.on("allTelemetry", (receivedTele) => {
+      // console.log("on allTelemetry");
       // console.log(`data received with altitude = ${M.altitude}`);
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);
@@ -59,19 +61,22 @@ export default function useTelemetry(socket) {
         scaled = Math.floor(scaled);
         return scaled;
       }
+      const now = Date.now();
       setDroneTele({
-        time: receivedTele.time,
+        time: now,
         batStatus: receivedTele.batStatus,
         batIcon: scaleBat(receivedTele.batStatus),
         // wifiSignal: receivedTele.wifiSignal,
-        wifiIcon: scaleWifi(receivedTele.wifiSignal),
+        wifiIcon: scaleWifi(
+          receivedTele.wifiSignal ? receivedTele.wifiSignal : 10
+        ),
       });
       setGpsTele({
-        time: receivedTele.time,
+        time: now,
         latitude: receivedTele.latitude,
         longitude: receivedTele.longitude,
-        altitude: receivedTele.altitude,
-        bearing: receivedTele.bearing,
+        altitude: receivedTele.height,
+        bearing: receivedTele.yaw,
       });
       /**
        * save telemetry to file

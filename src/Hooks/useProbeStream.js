@@ -16,7 +16,7 @@ export default function useProbeStream(errorOccurred) {
       try {
         console.log(`start probing URL = ${streamingDevice.url}`);
         //
-        const closableWaitTime = 5000;
+        const closableWaitTime = 1000;
         closeableTimeout = setTimeout(() => {
           if (isSubscribed) setClosable(true);
         }, closableWaitTime);

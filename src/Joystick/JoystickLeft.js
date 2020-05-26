@@ -3,24 +3,14 @@ import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 
 const JoystickLeft = (props) => {
-  const { socket } = props;
-  function emitDefault(type) {
-    if (!socket.connected) {
-      console.log(
-        `trying to emit type: ${type} to server but socket is not open!`
-      );
-      return;
-    }
-    console.log(`emitting type: ${type} to server`);
-    socket.emit("command", { type });
-  }
+  const { setNavCommand } = props;
   return (
     <View style={styles.container}>
       <View style={styles.btnUpContainer}>
         <TouchableOpacity
           title=""
           style={[styles.btn, styles.btnUp]}
-          onPress={() => emitDefault("forward")}
+          onPress={() => setNavCommand("forward")}
         />
       </View>
       <View style={styles.btnLeftRightContainer}>
@@ -28,14 +18,14 @@ const JoystickLeft = (props) => {
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnLeft]}
-            onPress={() => emitDefault("left")}
+            onPress={() => setNavCommand("left")}
           />
         </View>
         <View style={styles.btnRightContainer}>
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnRight]}
-            onPress={() => emitDefault("right")}
+            onPress={() => setNavCommand("right")}
           />
         </View>
       </View>
@@ -44,7 +34,7 @@ const JoystickLeft = (props) => {
         <TouchableOpacity
           title=""
           style={[styles.btn, styles.btnDown]}
-          onPress={() => emitDefault("backward")}
+          onPress={() => setNavCommand("back")}
         />
       </View>
       {/* </View> */}
@@ -135,6 +125,6 @@ const styles = StyleSheet.create({
   },
 });
 JoystickLeft.propTypes = {
-  socket: PropTypes.object.isRequired,
+  setNavCommand: PropTypes.func.isRequired,
 };
 export default JoystickLeft;

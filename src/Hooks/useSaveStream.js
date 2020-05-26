@@ -15,6 +15,7 @@ export default function useSaveStream(socket) {
       const saveVideo = shouldSave.video;
       if (!saveVideo) return;
       if (!socket) return;
+      if (!socket.connected) return;
       // if (!socket) {
       //   //save video only after telemetry socket is open
       //   return;

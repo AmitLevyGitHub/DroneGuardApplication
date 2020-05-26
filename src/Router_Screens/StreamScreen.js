@@ -72,6 +72,7 @@ const StreamScreen = (props) => {
     showNavStatus,
     navigationStatus,
     navigatingModalClosable,
+    setNavCommand,
   ] = useNavigateDrone(socket, {
     scaledWidth,
     scaledHeight,
@@ -127,12 +128,6 @@ const StreamScreen = (props) => {
         {/** Video Stream component + touch handler */}
         <TouchableWithoutFeedback
           onPress={(e) => {
-            if (!socket.connected) {
-              console.log(
-                "trying to emit type: press to server but socket is not open!"
-              );
-              return;
-            }
             if (isNavigating && navigatingModalVisible) return;
             if (isProbing && probeModalVisible) return;
             // if (isNavigating || isProbing) return; //disable press input when navigation is happening!
@@ -313,20 +308,11 @@ const StreamScreen = (props) => {
             }}
           >
             {/** 2D navigation pad */}
-            <JoystickLeft socket={socket} />
+            <JoystickLeft setNavCommand={setNavCommand} />
             {/** Land */}
             <TouchableWithoutFeedback
               style={{ zIndex: 100 }}
-              onPress={() => {
-                if (!socket.connected) {
-                  console.log(
-                    "trying to emit type: land to server but socket is not open!"
-                  );
-                  return;
-                }
-                console.log("sending type: land to server");
-                socket.emit("command", { type: "land" });
-              }}
+              onPress={() => setNavCommand("land")}
             >
               <Image
                 source={require("../Assets/Icons/backHome.png")}
@@ -337,19 +323,8 @@ const StreamScreen = (props) => {
                 }}
               />
             </TouchableWithoutFeedback>
-            {/** connect to drone */}
-            <TouchableOpacity
-              onPress={() => {
-                if (!socket.connected) {
-                  console.log(
-                    "trying to emit type: takeoff to server but socket is not open!"
-                  );
-                  return;
-                }
-                console.log("sending type: takeoff to server");
-                socket.emit("command", { type: "takeoff" });
-              }}
-            >
+            {/** takeoff */}
+            <TouchableOpacity onPress={() => setNavCommand("takeoff")}>
               <Text
                 style={{
                   backgroundColor: "white",
@@ -360,8 +335,32 @@ const StreamScreen = (props) => {
                 TAKEOFF
               </Text>
             </TouchableOpacity>
+            {/** emergency */}
+            <TouchableOpacity onPress={() => setNavCommand("emergency")}>
+              <Text
+                style={{
+                  backgroundColor: "white",
+                  color: "black",
+                  fontSize: 20,
+                }}
+              >
+                EMERGENCY
+              </Text>
+            </TouchableOpacity>
+            {/** command */}
+            <TouchableOpacity onPress={() => setNavCommand("command")}>
+              <Text
+                style={{
+                  backgroundColor: "white",
+                  color: "black",
+                  fontSize: 20,
+                }}
+              >
+                COMMAND
+              </Text>
+            </TouchableOpacity>
             {/** 3D navigation pad */}
-            <JoystickRight socket={socket} />
+            <JoystickRight setNavCommand={setNavCommand} />
           </View>
           {/** Home Indication */}
           <View

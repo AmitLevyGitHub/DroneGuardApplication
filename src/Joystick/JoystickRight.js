@@ -3,22 +3,12 @@ import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 
 const JoystickRight = (props) => {
-  const { socket } = props;
-  function emitDefault(type) {
-    if (!socket.connected) {
-      console.log(
-        `trying to emit type: ${type} to server but socket is not open!`
-      );
-      return;
-    }
-    console.log(`emitting type: ${type} to server`);
-    socket.emit("command", { type });
-  }
+  const { setNavCommand } = props;
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.btnContainer}
-        onPress={() => emitDefault("up")}
+        onPress={() => setNavCommand("up")}
       >
         <View style={[styles.btn, styles.btnUp]} />
         <View style={[styles.btnLittle, styles.btnUpLittle]} />
@@ -28,7 +18,7 @@ const JoystickRight = (props) => {
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnSpinLeft]}
-            onPress={() => emitDefault("spinLeft")}
+            onPress={() => setNavCommand("spinLeft")}
           >
             <View style={[styles.spinBtnArrow, styles.spinBtnArrowLeft]} />
           </TouchableOpacity>
@@ -37,7 +27,7 @@ const JoystickRight = (props) => {
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnSpinRight]}
-            onPress={() => emitDefault("spinRight")}
+            onPress={() => setNavCommand("spinRight")}
           >
             <View style={[styles.spinBtnArrow, styles.spinBtnArrowRight]} />
             {/* <View style={[styles.spinBtnArrow, styles.spinBtnArrowLeft]} /> */}
@@ -46,7 +36,7 @@ const JoystickRight = (props) => {
       </View>
       <TouchableOpacity
         style={[styles.btnContainer, styles.btnUpcontainer]}
-        onPress={() => emitDefault("down")}
+        onPress={() => setNavCommand("down")}
       >
         <View style={[styles.btnLittle, styles.btnDownLittle]} />
         <View style={[styles.btn, styles.btnDown]} />
@@ -207,6 +197,6 @@ const styles = StyleSheet.create({
   },
 });
 JoystickRight.propTypes = {
-  socket: PropTypes.object.isRequired,
+  setNavCommand: PropTypes.func.isRequired,
 };
 export default JoystickRight;
