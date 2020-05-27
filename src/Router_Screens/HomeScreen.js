@@ -7,21 +7,23 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Image,
-  StyleSheet
+  StyleSheet,
+  ImageBackground
 } from "react-native";
 import { S, AS, isUploadDisabled, forceUpload } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
 //
 const HomeScreen = props => {
   return (
-    <View
+    <ImageBackground
+      source={require("../Assets/Icons/home_bg.png")}
       style={{
         display: "flex",
         flexDirection: "row",
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#d0efff"
+        backgroundSize: "cover"
       }}
     >
       <View style={styles.header}>
@@ -63,16 +65,29 @@ const HomeScreen = props => {
           }}
           style={styles.card}
         >
-          <Text style={styles.text}>Stream</Text>
+          <Image
+            source={require("../Assets/Icons/streaming.png")}
+            style={{ width: 100, height: 100, marginTop: 15 }}
+          />
+          <TouchableOpacity style={styles.textWrapper}>
+            <Text style={styles.text}>STREAM</Text>
+          </TouchableOpacity>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <View
           disabled={isUploadDisabled}
           onPress={async () => props.setScreen(S.upload)}
           style={styles.card}
         >
-          <Text style={styles.text}>Upload Events</Text>
-        </TouchableOpacity>
+          <Image
+            source={require("../Assets/Icons/upload.png")}
+            style={{ width: 100, height: 100, marginTop: 15 }}
+          />
+
+          <TouchableOpacity style={styles.textWrapper}>
+            <Text style={styles.text}>UPLOAD</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       {/*<Button*/}
       {/*  title="log out"*/}
@@ -89,7 +104,7 @@ const HomeScreen = props => {
       {/*    }*/}
       {/*  }}*/}
       {/*/>*/}
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -103,7 +118,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
     zIndex: 100,
     paddingLeft: 15,
     paddingRight: 15,
@@ -116,13 +130,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-around"
   },
   card: {
-    backgroundColor: "rgba(255, 255, 255, 0.4)",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 4,
     height: 200,
     width: 180,
-    justifyContent: "center"
+    // justifyContent: "center",
+    alignItems: "center"
   },
-  text: { fontSize: 25, textAlign: "center" }
+  text: {
+    fontSize: 15,
+    textAlign: "center",
+    color: "white"
+  },
+  textWrapper: {
+    borderRadius: 20,
+    borderStyle: "solid",
+    borderColor: "white",
+    borderWidth: 1,
+    padding: 5,
+    width: 100,
+    marginTop: 30
+  }
 });
 
 HomeScreen.propTypes = {

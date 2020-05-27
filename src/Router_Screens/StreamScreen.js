@@ -166,8 +166,6 @@ const StreamScreen = props => {
           </TouchableWithoutFeedback>
           {/** Height indication */}
           <View pointerEvents="none" style={styles.telemetryBox}>
-            <Text style={styles.telemetryInfo}>{gpsTele.altitude}m</Text>
-            <Text style={styles.telemetryInfo}>{droneTele.batStatus}%</Text>
             <Image
               source={
                 droneTele.wifiIcon === 0
@@ -176,12 +174,65 @@ const StreamScreen = props => {
                   ? require("../Assets/Icons/wifi1.png")
                   : droneTele.wifiIcon === 2
                   ? require("../Assets/Icons/wifi2.png")
-                  : require("../Assets/Icons/wifi3.png")
+                  : droneTele.wifiIcon === 3
+                  ? require("../Assets/Icons/wifi3.png")
+                  : require("../Assets/Icons/wifi0.png")
               }
-              style={{ width: 920 / 22, height: 392 / 22 }}
+              style={{ width: 920 / 26, height: 392 / 26 }}
             />
+            <Text style={styles.telemetryInfo}>{droneTele.batStatus}%</Text>
+            <Image
+              source={require("../Assets/Icons/battery.png")}
+              style={{
+                width: 13 / 2,
+                height: 24 / 2,
+                backgroundSize: "cover",
+                marginLeft: -4
+              }}
+            />
+            <Text style={styles.telemetryInfo}>|</Text>
+            <Text style={[styles.telemetryInfo, styles.height]}>
+              {parseFloat(gpsTele.altitude / 100)}m
+            </Text>
           </View>
-
+          <TouchableOpacity
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 50,
+              borderStyle: "solid",
+              borderColor: "#fff",
+              borderWidth: 1,
+              // marginRight: 10,
+              position: "absolute",
+              right: 55,
+              top: 9,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+            onPress={() => setNavCommand("command")}
+          >
+            <Text style={{ color: "#fff" }}>C</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 50,
+              borderStyle: "solid",
+              borderColor: "#fff",
+              borderWidth: 1,
+              // marginRight: 10,
+              position: "absolute",
+              right: 95,
+              top: 9,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+            onPress={() => setNavCommand("emergency")}
+          >
+            <Text style={{ color: "#fff" }}>E</Text>
+          </TouchableOpacity>
           <Image
             source={require("../Assets/StaticLifeGuards/man.jpg")}
             style={{
@@ -218,8 +269,8 @@ const StreamScreen = props => {
               <Image
                 source={
                   droneOption === "takeoff"
-                    ? require("../Assets/Icons/takeoff.png")
-                    : require("../Assets/Icons/backHome.png")
+                    ? require("../Assets/Icons/takeoff_icon.png")
+                    : require("../Assets/Icons/landing_drone_White.png")
                 }
                 style={{
                   width: 512 / 7,
@@ -318,7 +369,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    backgroundColor: "rgba(66, 66, 66, 0.3)",
     zIndex: 100,
     paddingLeft: 15,
     paddingRight: 15,
@@ -329,14 +380,20 @@ const styles = StyleSheet.create({
     zIndex: 100,
     flexDirection: "row",
     width: "20%",
-    height: '100%',
+    height: "100%",
     justifyContent: "space-around",
-    alignItems: "flex-end",
+    alignItems: "flex-end"
   },
   telemetryInfo: {
     zIndex: 100,
     fontSize: 10,
     color: "white"
+  },
+  height: {
+    fontSize: 12,
+    lineHeight: 13,
+    includeFontPadding: false,
+    textAlignVertical: "bottom"
   },
   joysticksRow: {
     display: "flex",

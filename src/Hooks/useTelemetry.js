@@ -10,7 +10,7 @@ export default function useTelemetry(socket) {
   const [gpsTele, setGpsTele] = React.useState({
     latitude: -1.0,
     longitude: -1.0,
-    altitude: 100,
+    altitude: 93,
     bearing: -1.0,
   });
   //emergency events detection
