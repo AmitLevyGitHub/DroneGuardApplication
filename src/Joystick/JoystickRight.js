@@ -32,7 +32,11 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#fff",
     borderRadius: 300,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    position: "absolute",
+    right: 20,
+    bottom: 5,
+    zIndex: 999
   },
   btn: {
     width: 20,
@@ -47,13 +51,13 @@ const styles = StyleSheet.create({
   btnContainer: {
     width: "100%",
     height: "50%",
-    justifyContent: "center",
+    justifyContent: "center"
     //backgroundColor: "blue"
   },
   btnDownContainer: {
     justifyContent: "center",
     alignItems: "flex-end",
-    transform: [{ rotate: "180deg" }],
+    transform: [{ rotate: "180deg" }]
     //backgroundColor: "red"
   },
   btnUp: {

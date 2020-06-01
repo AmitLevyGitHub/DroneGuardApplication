@@ -192,7 +192,7 @@ const StreamScreen = props => {
             />
             <Text style={styles.telemetryInfo}>|</Text>
             <Text style={[styles.telemetryInfo, styles.height]}>
-              {parseFloat(gpsTele.altitude / 100)}m
+              {gpsTele.altitude ? parseFloat(gpsTele.altitude / 100) : 0}m
             </Text>
           </View>
           <TouchableOpacity
@@ -239,63 +239,53 @@ const StreamScreen = props => {
               width: 30,
               height: 30,
               borderRadius: 50
-              // // overflow: "hidden",
-              // borderWidth: 0.5,
-              // borderColor: "white",
-              // marginLeft: 8,
-              // marginRight: 8
             }}
           />
         </View>
 
-        <View style={styles.joysticksRow}>
-          <JoystickLeft setNavCommand={setNavCommand} />
-          <View style={styles.actionButtons}>
-            <TouchableWithoutFeedback
-              style={{
-                zIndex: 100
-              }}
-              onPress={() => {
-                console.log("clicked:");
-                if (droneOption === "takeoff") {
-                  setNavCommand("takeoff");
-                  setDroneOption("land");
-                } else {
-                  setNavCommand("land");
-                  setDroneOption("takeoff");
-                }
-              }}
-            >
-              <Image
-                source={
-                  droneOption === "takeoff"
-                    ? require("../Assets/Icons/takeoff_icon.png")
-                    : require("../Assets/Icons/landing_drone_White.png")
-                }
-                style={{
-                  width: 512 / 7,
-                  height: 512 / 7,
-                  zIndex: 100,
-                  position: "relative",
-                  left: 162
-                }}
-              />
-            </TouchableWithoutFeedback>
-          </View>
-          <JoystickRight setNavCommand={setNavCommand} />
-        </View>
-        {/*  /!** Home Indication *!/*/}
-        <View
-          style={{
-            position: "absolute",
-            top: scaledHeight / 2,
-            left: scaledWidth / 2,
-            zIndex: 100
+        <JoystickRight setNavCommand={setNavCommand} />
+        <JoystickLeft setNavCommand={setNavCommand} />
+        <TouchableWithoutFeedback
+          onPress={() => {
+            if (droneOption === "takeoff") {
+              setNavCommand("takeoff");
+              setDroneOption("land");
+            } else {
+              setNavCommand("land");
+              setDroneOption("takeoff");
+            }
           }}
-          pointerEvents="none"
         >
-          <Text>O</Text>
-        </View>
+          <Image
+            source={
+              droneOption === "takeoff"
+                ? require("../Assets/Icons/takeoff_icon.png")
+                : require("../Assets/Icons/landing_drone_White.png")
+            }
+            style={{
+              width: 512 / 7,
+              height: 512 / 7,
+              zIndex: 100,
+              position: "absolute",
+              left: 307,
+              bottom: 0
+            }}
+          />
+        </TouchableWithoutFeedback>
+
+        {/*</View>*/}
+        {/*  /!** Home Indication *!/*/}
+        {/*<View*/}
+        {/*  style={{*/}
+        {/*    position: "absolute",*/}
+        {/*    top: scaledHeight / 2,*/}
+        {/*    left: scaledWidth / 2,*/}
+        {/*    zIndex: 100*/}
+        {/*  }}*/}
+        {/*  pointerEvents="none"*/}
+        {/*>*/}
+        {/*  <Text>O</Text>*/}
+        {/*</View>*/}
         {/*  /!** Navigation in process Modal *!/*/}
         <Modal
           animationType="fade"
@@ -349,7 +339,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
     backgroundColor: "black",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    position: "relative"
   },
   probingText: {
     fontSize: 60,
@@ -404,12 +395,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     left: 0,
-    zIndex: 100,
+    zIndex: 10,
     marginBottom: 10,
     paddingLeft: 20,
     paddingRight: 20,
     paddingTop: 5,
     paddingBottom: 5
+    // backgroundColor: "red"
   },
   actionButtons: {
     flexDirection: "row",

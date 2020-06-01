@@ -51,6 +51,10 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     borderRadius: 300,
     justifyContent: "space-between",
+    position: 'absolute',
+    left: 20,
+    bottom: 5,
+    zIndex: 999
   },
   btn: {
     width: 0,

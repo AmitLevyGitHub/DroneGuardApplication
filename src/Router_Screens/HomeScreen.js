@@ -59,32 +59,31 @@ const HomeScreen = props => {
         />
       </View>
       <View style={styles.cardsContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            props.setScreen(S.stream);
-          }}
-          style={styles.card}
-        >
+        <TouchableOpacity style={styles.card}>
           <Image
             source={require("../Assets/Icons/streaming.png")}
             style={{ width: 100, height: 100, marginTop: 15 }}
           />
-          <TouchableOpacity style={styles.textWrapper}>
+          <TouchableOpacity
+            style={styles.textWrapper}
+            onPress={() => {
+              props.setScreen(S.stream);
+            }}
+          >
             <Text style={styles.text}>STREAM</Text>
           </TouchableOpacity>
         </TouchableOpacity>
 
-        <View
-          disabled={isUploadDisabled}
-          onPress={async () => props.setScreen(S.upload)}
-          style={styles.card}
-        >
+        <View disabled={isUploadDisabled} style={styles.card}>
           <Image
             source={require("../Assets/Icons/upload.png")}
             style={{ width: 100, height: 100, marginTop: 15 }}
           />
 
-          <TouchableOpacity style={styles.textWrapper}>
+          <TouchableOpacity
+            style={styles.textWrapper}
+            onPress={async () => props.setScreen(S.upload)}
+          >
             <Text style={styles.text}>UPLOAD</Text>
           </TouchableOpacity>
         </View>

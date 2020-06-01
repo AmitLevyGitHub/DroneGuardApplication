@@ -29,13 +29,13 @@ export default function useSaveStream(socket) {
       //
       //save the video stream
       try {
-        const videoPath = `${RNFS.ExternalDirectoryPath}/${FN.video}`;
+        const videoPath = `${RNFS.DocumentDirectoryPath}/${FN.video}`;
         const FFMPEGcommand = `-i ${streamingDevice.url} -b:v 1000000 -c:v copy -r 60 -y ${videoPath}`;
         // const FFMPEGcommand = `-i ${streamingDevice.url} -b:v 1000000 -c:v copy -r 60 -y ${videoPath}`;
         // const FFMPEGcommand = `-i ${streamingDevice.url} -c:v copy ${videoPath}`;
         console.log(`saving video to ${videoPath}`);
         shouldExecute.current = true;
-        videoStartTime = Date.now();
+        const videoStartTime = Date.now();
         const result = await RNFFmpeg.execute(FFMPEGcommand);
         console.log("\n-\n-\n-\nFFmpeg process exited with rc " + result.rc);
       } catch (error) {
