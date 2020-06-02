@@ -13,7 +13,7 @@ export const forceUpload = false;
  * navigation consts
  */
 export const navConsts = {
-  emergencyHeight: 10
+  emergencyHeight: 10,
 };
 /**
  * telemetry socket
@@ -22,7 +22,7 @@ export const telemetryDevice = {
   // ip: "192.168.68.118",
   ip: "192.168.0.150",
   // port: 2222,
-  port: 3000
+  port: 3000,
 };
 /**
  * streaming & socket
@@ -35,7 +35,7 @@ const streamDeviceDomain = "192.168.0.150";
 // export const streamDeviceDomain = "192.168.0.115";
 export const streamingDevice = {
   ip: streamDeviceDomain,
-  url: `rtsp://${streamDeviceDomain}:8160/`
+  url: `rtsp://${streamDeviceDomain}:8160/`,
   // url: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
 };
 /**
@@ -57,7 +57,7 @@ export const piCameraInfo = {
   xDimensions: 3.6, //mm
   yDimensions: 2.7, //mm
   horizontalDegree: { ...lenFormula(3.6, 3.6) },
-  verticalDegree: { ...lenFormula(3.6, 2.7) }
+  verticalDegree: { ...lenFormula(3.6, 2.7) },
 };
 /**
  * screens
@@ -67,19 +67,19 @@ export const S = {
   login: "login",
   home: "home",
   stream: "stream",
-  upload: "upload"
+  upload: "upload",
 };
 /**
  * files & directories names
  */
-const videoFormat = "m4v";
+const videoFormat = "mp4";
 export const FN = {
   video: `streamVideo.${videoFormat}`,
   telemetry: "allTelemetry.txt",
   events: "emergencyEvents.txt",
   logger: "logger.txt",
   appErrors: "appErrors.txt",
-  eventDirectory: "eventDirectory"
+  eventDirectory: "eventDirectory",
 };
 /**
  * async storage keys
@@ -88,5 +88,5 @@ export const AS = {
   userToken: "@userToken",
   uploadStatus: "@uploadStatus",
   //
-  emergencyEvent: "@emergencyEvent"
+  emergencyEvent: "@emergencyEvent",
 };
