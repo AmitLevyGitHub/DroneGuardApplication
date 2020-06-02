@@ -5,10 +5,19 @@ export default function useUploadEvents(isPreparing, eventsStatus) {
   React.useEffect(() => {
     if (isPreparing) return;
     (async () => {
+      let isError = false;
       for (let i = 0; i < eventsStatus.length; i++) {
         const event = { ...eventsStatus[i] };
         setCurrentEvent(event);
-        await handleEventFake(event);
+        try {
+          await handleEventFake(event);
+        } catch (error) {
+          isError = true;
+        }
+      }
+      //
+      if (!isError) {
+        //clear AS.uploadStatus
       }
     })();
   }, [isPreparing, eventsStatus]);
@@ -21,23 +30,42 @@ async function handleEventFake(event) {
   }
   await sleep(2000);
 }
-async function handleEvent(event) {
-  /**
-   * create event in DB
-   */
-  //create
-  //remember eventID
-  /**
-   * create event directory on device
-   */
-  /**
-   * trim video
-   */
-  //trim
-  /**
-   *
-   */
-  //create thumbnail
-  //cut telemetry
-  //
+function handleEvent(event) {
+  return new Promise(async (resolve, reject) => {
+    /**
+     * create event in DB
+     */
+    if (!event.ID) {
+      //create
+      //remember eventID
+      //create event directory on device
+    }
+    /**
+     * trim video
+     */
+    // if (!)
+    //trim
+    /**
+     *
+     */
+    //create thumbnail
+    //cut telemetry
+    //
+    /**
+     * create directory on device
+create event in DB
+
+cut telemetry
+upload telemetry
+update telemetry in DB
+
+create screenshot
+upload screenshot
+update screenshot in DB
+
+trim video
+upload video
+update video in DB
+     */
+  });
 }

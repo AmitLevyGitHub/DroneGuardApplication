@@ -27,10 +27,15 @@ const Router = () => {
       }
       //
       //check upload status
-      let uploadStatus = null;
+      let uploadStatus = [];
       try {
-        uploadStatus = await AsyncStorage.getItem(AS.uploadStatus);
-        uploadStatus = uploadStatus ? JSON.parse(uploadStatus) : null;
+        uploadStatusString = await AsyncStorage.getItem(AS.uploadStatus);
+        if (uploadStatusString) {
+          uploadStatus = JSON.parse(uploadStatusString);
+          if (!Array.isArray(uploadStatus)) {
+            uploadStatus = [];
+          }
+        }
       } catch (e) {
         console.log(
           `ERROR reading ${AS.uploadStatus} from async storage!\n${
@@ -38,17 +43,12 @@ const Router = () => {
           }`
         );
       }
-      if (!uploadStatus || !uploadStatus.hasOwnProperty("interrupted")) {
-        uploadStatus = {
-          interrupted: false,
-        };
-      }
       //
       //navigate
       if (!userToken) {
         setScreen(S.login);
       } else {
-        if (forceUpload && uploadStatus.interrupted) {
+        if (uploadStatus.length > 0) {
           setScreen(S.upload);
         } else {
           setScreen(S.home);
