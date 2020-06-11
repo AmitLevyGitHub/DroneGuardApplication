@@ -7,10 +7,42 @@ export default function usePrepareUpload() {
   const [isPreparing, setPreparing] = React.useState(true);
   const [eventsStatus, setEventsStatus] = React.useState([]);
   const [videoStat, setVideoStat] = React.useState(null);
+  const [tokenIDs, setTokenIDs] = React.useState(null);
   React.useEffect(() => {
     let isSubscribed = true;
     (async () => {
       setPreparing(true);
+      /**
+       * get token/id/beachID from local storage
+       */
+      let token = null;
+      try {
+        token = await AsyncStorage.getItem(AS.userToken);
+      } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(`ERROR reading ${AS.userToken} from async storage!\n${m}`);
+      }
+      let lifeGuardId = null;
+      try {
+        lifeGuardId = await AsyncStorage.getItem(AS.lifeGuardId);
+      } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(
+          `ERROR reading ${AS.lifeGuardId} from async storage!\n${m}`
+        );
+      }
+      let beachId = null;
+      try {
+        beachId = await AsyncStorage.getItem(AS.beachId);
+      } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(`ERROR reading ${AS.beachId} from async storage!\n${m}`);
+      }
+      setTokenIDs({
+        token,
+        lifeGuardId,
+        beachId,
+      });
       /**
        * read video stat
        */
@@ -22,21 +54,18 @@ export default function usePrepareUpload() {
         const stat = await RNFS.stat(videoPath);
         vidStartTime = new Date(stat.ctime).getTime();
       } catch (e) {
-        console.log(
-          `ERROR reading file ${FN.video}: ${
-            e.hasOwnProperty("message") ? e.message : e
-          }`
-        );
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(`ERROR reading file ${FN.video}: ${m}`);
       }
       try {
         const vidInfo = await RNFFprobe.getMediaInformation(videoPath);
         vidDuration = vidInfo.duration;
+        console.log(`duration = ${vidDuration}`);
         vidStartTimeInFile = vidInfo.startTime;
       } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
         console.log(
-          `ERROR executing RNFFprobe.getMediaInformation for file ${
-            FN.video
-          }: ${e.hasOwnProperty("message") ? e.message : e}`
+          `error executing RNFFprobe.getMediaInformation for file ${FN.video}\n${m}`
         );
       }
       setVideoStat({
@@ -48,26 +77,25 @@ export default function usePrepareUpload() {
       /**
        * read eventsStatus from async storage / create it from emergency events file
        */
-      let uploadStatus = null;
+      let uploadStatus = [];
       try {
         const stringValue = await AsyncStorage.getItem(AS.uploadStatus);
         if (stringValue) uploadStatus = JSON.parse(stringValue);
       } catch (e) {
         console.log(`error reading ${AS.uploadStatus}!`);
       }
-      if (!uploadStatus || !uploadStatus.hasOwnProperty("interrupted")) {
-        uploadStatus = {
-          interrupted: true,
-        };
-      }
       //
       //if not first time return
-      if (uploadStatus.hasOwnProperty("eventsStatus")) {
+      if (uploadStatus.length > 0 && uploadStatus[0] !== 1) {
+        console.log("using emergency events from local storage");
+        setEventsStatus(uploadStatus);
+        // console.log(JSON.stringify(uploadStatus, null, 2))
         isSubscribed && setPreparing(false);
         return;
       }
       //
       //if first time read from file
+      console.log("loading emergency events from file");
       const emergencyEventsPath = RNFS.ExternalDirectoryPath + "/" + FN.events;
       let ALL_events = null;
       try {
@@ -94,22 +122,27 @@ export default function usePrepareUpload() {
         lifeGuardID: null,
         beachID: null,
         //
-        folderName: null,
+        failed: false,
+        directoryName: null,
+        directoryPath: null,
         ID: null,
         telemetry: {
-          name: null,
-          isUpload: false,
-          URL: null,
+          fileName: null,
+          fullPath: null,
+          awsURL: null,
+          updatedDB: false,
         },
         thumbnail: {
-          name: null,
-          isUpload: false,
-          URL: null,
+          fileName: null,
+          fullPath: null,
+          awsURL: null,
+          updatedDB: false,
         },
         video: {
-          name: null,
-          isUpload: false,
-          URL: null,
+          fileName: null,
+          fullPath: null,
+          awsURL: null,
+          updatedDB: false,
         },
       }));
       setEventsStatus(t);
@@ -130,5 +163,5 @@ export default function usePrepareUpload() {
     };
   }, []);
   //
-  return [isPreparing, eventsStatus, videoStat];
+  return [isPreparing, eventsStatus, videoStat, tokenIDs];
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, Button, Text, TextInput } from "react-native";
+import { ScrollView, View, Button, Text, TextInput } from "react-native";
 //
 import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
@@ -58,6 +58,15 @@ const CropUploadStuff = () => {
       <Text style={{ fontSize: 20 }}>
         Convert full length original h264 to mp4
       </Text>
+      {/** clear async storage util */}
+      <Button
+        title="clear AS.uploadStatus"
+        onPress={async () => {
+          await AsyncStorage.removeItem(AS.uploadStatus);
+          console.log("cleared AS.uploadStatus from async storage");
+        }}
+      />
+      <View style={{ paddingBottom: 20 }}></View>
       {/** convert full length */}
       <Button
         title="convert H264 to mp4"

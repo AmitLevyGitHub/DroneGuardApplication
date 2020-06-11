@@ -27,15 +27,12 @@ export const telemetryDevice = {
 /**
  * streaming & socket
  */
-// const streamDeviceDomain = "192.168.68.118";
-const streamDeviceDomain = "192.168.0.150";
-// export const streamDeviceDomain = "192.168.68.134";
-// export const streamDeviceDomain = "192.168.68.132";
-// export const streamDeviceDomain = "10.100.102.12";
-// export const streamDeviceDomain = "192.168.0.115";
+// const streamDeviceDomain = "192.168.0.150";
+const streamDeviceDomain = "192.168.10.1";
 export const streamingDevice = {
   ip: streamDeviceDomain,
-  url: `rtsp://${streamDeviceDomain}:8160/`,
+  // url: `rtsp://${streamDeviceDomain}:8160/`,
+  url: `udp://${streamDeviceDomain}:11111`,
   // url: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
 };
 /**
@@ -65,6 +62,7 @@ export const piCameraInfo = {
 export const S = {
   load: "load",
   login: "login",
+  beaches: "beaches",
   home: "home",
   stream: "stream",
   upload: "upload",
@@ -79,13 +77,15 @@ export const FN = {
   events: "emergencyEvents.txt",
   logger: "logger.txt",
   appErrors: "appErrors.txt",
-  eventDirectory: "eventDirectory",
+  eventPrefix: "event",
 };
 /**
  * async storage keys
  */
 export const AS = {
   userToken: "@userToken",
+  lifeGuardId: "@lifeGuardId",
+  beachId: "@beachId",
   uploadStatus: "@uploadStatus",
   //
   emergencyEvent: "@emergencyEvent",

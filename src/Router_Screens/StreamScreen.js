@@ -8,7 +8,7 @@ import {
   Text,
   ActivityIndicator,
   TouchableWithoutFeedback,
-  TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
 import { Provider, Modal } from "@ant-design/react-native";
 // import Icon from "react-native-vector-icons/FontAwesome5";
@@ -26,7 +26,7 @@ import { streamingDevice, S, AS, forceUpload } from "../Assets/consts";
 import JoystickRight from "../Joystick/JoystickRight";
 import JoystickLeft from "../Joystick/JoystickLeft";
 
-const StreamScreen = props => {
+const StreamScreen = (props) => {
   //socket
   const [socket] = useSocket();
   //telemetry
@@ -38,7 +38,7 @@ const StreamScreen = props => {
     isProbing,
     streamWidth,
     streamHeight,
-    probeModalClosable
+    probeModalClosable,
   ] = useProbeStream(errorOccurred);
   const [probeModalVisible, setProbeModalVisible] = React.useState(true);
   const [droneOption, setDroneOption] = React.useState("takeoff");
@@ -54,13 +54,13 @@ const StreamScreen = props => {
     showNavStatus,
     navigationStatus,
     navigatingModalClosable,
-    setNavCommand
+    setNavCommand,
   ] = useNavigateDrone(socket, {
     scaledWidth,
     scaledHeight,
     centerCoordinate: { lat: gpsTele.latitude, lon: gpsTele.longitude },
     droneHeightCM: gpsTele.altitude,
-    droneBearing: gpsTele.bearing
+    droneBearing: gpsTele.bearing,
   });
   //navigation status feedback, allowing the user to close it
   const [isStatusModal, setIsStatusModal] = React.useState(true);
@@ -68,11 +68,9 @@ const StreamScreen = props => {
   //on exit mark in async storage so user must upload data before using again
   React.useEffect(() => {
     return async function cleanup() {
+      //RNFFMPEG.cancel()?
       try {
-        await AsyncStorage.setItem(
-          AS.uploadStatus,
-          JSON.stringify({ interrupted: true })
-        );
+        await AsyncStorage.setItem(AS.uploadStatus, JSON.stringify([1]));
       } catch (e) {
         // saving error
         console.log(
@@ -109,7 +107,7 @@ const StreamScreen = props => {
         </Modal>
         {/*/!** Video Stream component + touch handler *!/*/}
         <TouchableWithoutFeedback
-          onPress={e => {
+          onPress={(e) => {
             if (isNavigating && navigatingModalVisible) return;
             if (isProbing && probeModalVisible) return;
             // if (isNavigating || isProbing) return; //disable press input when navigation is happening!
@@ -126,9 +124,9 @@ const StreamScreen = props => {
               backgroundColor: "black",
               width: scaledWidth,
               height: scaledHeight,
-              zIndex: 5
+              zIndex: 5,
             }}
-            ref={vp => setMyRef(vp)}
+            ref={(vp) => setMyRef(vp)}
             inputUrl={streamingDevice.url}
             scaleMode="ScaleAspectFit"
             bufferTime={100}
@@ -187,7 +185,7 @@ const StreamScreen = props => {
                 width: 13 / 2,
                 height: 24 / 2,
                 backgroundSize: "cover",
-                marginLeft: -4
+                marginLeft: -4,
               }}
             />
             <Text style={styles.telemetryInfo}>|</Text>
@@ -208,7 +206,7 @@ const StreamScreen = props => {
               right: 55,
               top: 9,
               justifyContent: "center",
-              alignItems: "center"
+              alignItems: "center",
             }}
             onPress={() => setNavCommand("command")}
           >
@@ -227,7 +225,7 @@ const StreamScreen = props => {
               right: 95,
               top: 9,
               justifyContent: "center",
-              alignItems: "center"
+              alignItems: "center",
             }}
             onPress={() => setNavCommand("emergency")}
           >
@@ -238,7 +236,7 @@ const StreamScreen = props => {
             style={{
               width: 30,
               height: 30,
-              borderRadius: 50
+              borderRadius: 50,
             }}
           />
         </View>
@@ -268,7 +266,7 @@ const StreamScreen = props => {
               zIndex: 100,
               position: "absolute",
               left: 307,
-              bottom: 0
+              bottom: 0,
             }}
           />
         </TouchableWithoutFeedback>
@@ -340,16 +338,16 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
     justifyContent: "center",
     alignItems: "center",
-    position: "relative"
+    position: "relative",
   },
   probingText: {
     fontSize: 60,
     color: "#ffffff",
-    marginBottom: 50
+    marginBottom: 50,
   },
   activityIndicator: {
     transform: [{ scale: 2 }],
-    marginTop: 20
+    marginTop: 20,
   },
   header: {
     display: "flex",
@@ -365,7 +363,7 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
     paddingTop: 5,
-    paddingBottom: 5
+    paddingBottom: 5,
   },
   telemetryBox: {
     zIndex: 100,
@@ -373,18 +371,18 @@ const styles = StyleSheet.create({
     width: "20%",
     height: "100%",
     justifyContent: "space-around",
-    alignItems: "flex-end"
+    alignItems: "flex-end",
   },
   telemetryInfo: {
     zIndex: 100,
     fontSize: 10,
-    color: "white"
+    color: "white",
   },
   height: {
     fontSize: 12,
     lineHeight: 13,
     includeFontPadding: false,
-    textAlignVertical: "bottom"
+    textAlignVertical: "bottom",
   },
   joysticksRow: {
     display: "flex",
@@ -400,16 +398,16 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     paddingTop: 5,
-    paddingBottom: 5
+    paddingBottom: 5,
     // backgroundColor: "red"
   },
   actionButtons: {
     flexDirection: "row",
-    flex: 1
-  }
+    flex: 1,
+  },
 });
 
 StreamScreen.propTypes = {
-  setScreen: PropTypes.func.isRequired
+  setScreen: PropTypes.func.isRequired,
 };
 export default StreamScreen;

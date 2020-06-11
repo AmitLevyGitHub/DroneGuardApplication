@@ -8,12 +8,12 @@ import {
   TouchableWithoutFeedback,
   Image,
   StyleSheet,
-  ImageBackground
+  ImageBackground,
 } from "react-native";
 import { S, AS, isUploadDisabled, forceUpload } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
 //
-const HomeScreen = props => {
+const HomeScreen = (props) => {
   return (
     <ImageBackground
       source={require("../Assets/Icons/home_bg.png")}
@@ -23,7 +23,7 @@ const HomeScreen = props => {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundSize: "cover"
+        backgroundSize: "cover",
       }}
     >
       <View style={styles.header}>
@@ -43,13 +43,23 @@ const HomeScreen = props => {
             style={{ width: 490 / 10, height: 367 / 10 }}
           />
         </TouchableWithoutFeedback>
-
+        {/** life guard image avatar */}
+        <TouchableWithoutFeedback
+          onPress={() => {
+            AsyncStorage.clear();
+            props.setScreen(S.login);
+          }}
+          style={{ zIndex: 100 }}
+        >
+          <Text>logout</Text>
+        </TouchableWithoutFeedback>
+        {/** life guard image avatar */}
         <Image
           source={require("../Assets/StaticLifeGuards/man.jpg")}
           style={{
             width: 30,
             height: 30,
-            borderRadius: 50
+            borderRadius: 50,
             // // overflow: "hidden",
             // borderWidth: 0.5,
             // borderColor: "white",
@@ -121,12 +131,12 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
     paddingTop: 5,
-    paddingBottom: 5
+    paddingBottom: 5,
   },
   cardsContainer: {
     flexDirection: "row",
     width: "80%",
-    justifyContent: "space-around"
+    justifyContent: "space-around",
   },
   card: {
     backgroundColor: "rgba(255, 255, 255, 0.2)",
@@ -134,12 +144,12 @@ const styles = StyleSheet.create({
     height: 200,
     width: 180,
     // justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   text: {
     fontSize: 15,
     textAlign: "center",
-    color: "white"
+    color: "white",
   },
   textWrapper: {
     borderRadius: 20,
@@ -148,12 +158,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 5,
     width: 100,
-    marginTop: 30
-  }
+    marginTop: 30,
+  },
 });
 
 HomeScreen.propTypes = {
-  setScreen: PropTypes.func.isRequired
+  setScreen: PropTypes.func.isRequired,
 };
 
 export default HomeScreen;

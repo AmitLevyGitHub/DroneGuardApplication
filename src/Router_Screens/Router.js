@@ -2,6 +2,7 @@ import React from "react";
 import { S, AS } from "../Assets/consts";
 import LoadScreen from "./LoadScreen";
 import LogInScreen from "./LogIn";
+import BeachesScreen from "./Beaches";
 import HomeScreen from "./HomeScreen";
 import UploadScreen from "./UploadScreen";
 import StreamScreen from "./StreamScreen";
@@ -19,11 +20,17 @@ const Router = () => {
       try {
         userToken = await AsyncStorage.getItem(AS.userToken);
       } catch (e) {
-        console.log(
-          `ERROR reading ${AS.userToken} from async storage!\n${
-            e.hasOwnProperty("message") ? e.message : e
-          }`
-        );
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(`ERROR getting ${AS.userToken} from async storage!\n${m}`);
+      }
+      //
+      //check if beach chosen
+      let beachId = null;
+      try {
+        beachId = await AsyncStorage.getItem(AS.beachId);
+      } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(`ERROR getting ${AS.beachId} from async storage!\n${m}`);
       }
       //
       //check upload status
@@ -37,18 +44,19 @@ const Router = () => {
           }
         }
       } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
         console.log(
-          `ERROR reading ${AS.uploadStatus} from async storage!\n${
-            e.hasOwnProperty("message") ? e.message : e
-          }`
+          `ERROR getting ${AS.uploadStatus} from async storage!\n${m}`
         );
       }
       //
       //navigate
       if (!userToken) {
         setScreen(S.login);
+      } else if (!beachId) {
+        setScreen(S.beaches);
       } else {
-        if (uploadStatus.length > 0) {
+        if (forceUpload && uploadStatus.length > 0 && uploadStatus[0] !== 1) {
           setScreen(S.upload);
         } else {
           setScreen(S.home);
@@ -60,6 +68,7 @@ const Router = () => {
     <React.Fragment>
       {screen === S.load && <LoadScreen />}
       {screen === S.login && <LogInScreen setScreen={setScreen} />}
+      {screen === S.beaches && <BeachesScreen setScreen={setScreen} />}
       {screen === S.home && <HomeScreen setScreen={setScreen} />}
       {screen === S.stream && <StreamScreen setScreen={setScreen} />}
       {screen === S.upload && <UploadScreen setScreen={setScreen} />}
