@@ -27,12 +27,12 @@ export const telemetryDevice = {
 /**
  * streaming & socket
  */
-// const streamDeviceDomain = "192.168.0.150";
-const streamDeviceDomain = "192.168.10.1";
+const streamDeviceDomain = "192.168.0.150";
+// const streamDeviceDomain = "192.168.10.1";
 export const streamingDevice = {
   ip: streamDeviceDomain,
-  // url: `rtsp://${streamDeviceDomain}:8160/`,
-  url: `udp://${streamDeviceDomain}:11111`,
+  url: `rtsp://${streamDeviceDomain}:8160/`,
+  // url: `udp://${streamDeviceDomain}:11111`,
   // url: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
 };
 /**
