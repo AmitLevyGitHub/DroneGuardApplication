@@ -6,7 +6,7 @@ import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
 import { FN, streamingDevice, shouldSave } from "../Assets/consts";
 //
-export default function useSaveStream(socket) {
+export default function useSaveStream(socket, hasStarted) {
   const [errorOccurred, setErrorOccurred] = React.useState(false);
   const shouldExecute = React.useRef(false);
   //
@@ -14,7 +14,7 @@ export default function useSaveStream(socket) {
     (async () => {
       const saveVideo = shouldSave.video;
       if (!saveVideo) return;
-      if (!socket) return;
+      if (!hasStarted && !socket) return;
       // if (!isSocketConnected) return;
       // if (!socket) {
       //   //save video only after telemetry socket is open

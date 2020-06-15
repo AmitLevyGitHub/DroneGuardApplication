@@ -9,52 +9,43 @@ import {
   ActivityIndicator,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  Modal,
 } from "react-native";
-import { Provider, Modal } from "@ant-design/react-native";
-// import Icon from "react-native-vector-icons/FontAwesome5";
-// import Icon2 from "react-native-vector-icons/MaterialCommunityIcons";
 import { NodePlayerView } from "react-native-nodemediaclient";
 import AsyncStorage from "@react-native-community/async-storage";
 //
-import useSaveStream from "../Hooks/useSaveStream";
-import useProbeStream from "../Hooks/useProbeStream";
-import useScaleStream from "../Hooks/useScaleStream";
+import { streamingDevice, S, AS, forceUpload } from "../Assets/consts";
+import StartModal from "../Components/StartModal";
+import JoystickRight from "../Components/JoystickRight";
+import JoystickLeft from "../Components/JoystickLeft";
 import useSocket from "../Hooks/useSocket";
 import useTelemetry from "../Hooks/useTelemetry";
+import useSaveStream from "../Hooks/useSaveStream";
+import useScaleStream from "../Hooks/useScaleStream";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
-import { streamingDevice, S, AS, forceUpload } from "../Assets/consts";
-import JoystickRight from "../Joystick/JoystickRight";
-import JoystickLeft from "../Joystick/JoystickLeft";
-
+//
 const StreamScreen = (props) => {
+  const streamWidth = 1920;
+  const streamHeight = 1080;
   //socket
   const [socket] = useSocket();
-  //telemetry
-  const [droneTele, gpsTele] = useTelemetry(socket);
-  //stream
-  const [myRef, setMyRef] = React.useState(null);
-  const [errorOccurred] = useSaveStream(socket);
-  const [
-    isProbing,
-    streamWidth,
-    streamHeight,
-    probeModalClosable,
-  ] = useProbeStream(errorOccurred);
-  const [probeModalVisible, setProbeModalVisible] = React.useState(true);
-  const [droneOption, setDroneOption] = React.useState("takeoff");
-  const [navigatingModalVisible, setNavigatingModalVisible] = React.useState(
-    true
-  );
+  //start stream & telemetry
+  const [hasStarted, setHasStarted] = React.useState(false);
+  const [droneTele, gpsTele] = useTelemetry(socket, hasStarted);
+  const [errorOccurred] = useSaveStream(socket, hasStarted);
   const [scaledWidth, scaledHeight] = useScaleStream(streamWidth, streamHeight);
+  const [myRef, setMyRef] = React.useState(null);
   //navigation handler
+  const [droneOption, setDroneOption] = React.useState("takeoff");
   const [
     setAxisX,
     setAxisY,
-    isNavigating,
-    showNavStatus,
-    navigationStatus,
-    navigatingModalClosable,
     setNavCommand,
+    isNavWorking,
+    navModalVisible,
+    setNavModalVisible,
+    navModalTitle,
+    navStatus,
   ] = useNavigateDrone(socket, {
     scaledWidth,
     scaledHeight,
@@ -62,10 +53,10 @@ const StreamScreen = (props) => {
     droneHeightCM: gpsTele.altitude,
     droneBearing: gpsTele.bearing,
   });
-  //navigation status feedback, allowing the user to close it
-  const [isStatusModal, setIsStatusModal] = React.useState(true);
-  //
-  //on exit mark in async storage so user must upload data before using again
+  /**
+   * StreamScreen cleanup
+   * on exit mark in async storage so user must upload data before using again
+   */
   React.useEffect(() => {
     return async function cleanup() {
       //RNFFMPEG.cancel()?
@@ -73,262 +64,214 @@ const StreamScreen = (props) => {
         await AsyncStorage.setItem(AS.uploadStatus, JSON.stringify([1]));
       } catch (e) {
         // saving error
-        console.log(
-          `error setting ${AS.uploadStatus} to true! Stream UI will not be blocked\n${e.message}`
-        );
+        const m = `error setting ${AS.uploadStatus} to true! Stream UI will not be blocked\n${e.message}`;
+        console.log(m);
       }
     };
   }, []);
   //
   return (
-    <Provider>
-      <View style={styles.container}>
-        {/** video loading modal */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isProbing && probeModalVisible}
-          closable={probeModalClosable}
-          maskClosable={false}
-          title="Connecting To Drone Camera"
-          style={{ minWidth: 360 }}
-          onClose={() => {
-            console.log("probe modal on close");
-            setProbeModalVisible(false);
-          }}
-        >
-          <View style={{ paddingVertical: 20 }}>
-            <ActivityIndicator
-              size="large"
-              color="#0077be"
-              style={styles.activityIndicator}
-            />
+    <View style={styles.container}>
+      {/** start modal */}
+      <StartModal socket={socket} setHasStarted={setHasStarted} />
+      {/** Navigation & Feedback modal */}
+      <Modal animationType="fade" transparent={true} visible={navModalVisible}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{navModalTitle}</Text>
+              <TouchableOpacity onPress={() => setNavModalVisible(false)}>
+                <Text style={styles.closeButton}>X</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.modalStatus}>{navStatus}</Text>
+            {isNavWorking && <ActivityIndicator size="large" color="#0077be" />}
           </View>
-        </Modal>
-        {/*/!** Video Stream component + touch handler *!/*/}
-        <TouchableWithoutFeedback
-          onPress={(e) => {
-            if (isNavigating && navigatingModalVisible) return;
-            if (isProbing && probeModalVisible) return;
-            // if (isNavigating || isProbing) return; //disable press input when navigation is happening!
-            const axisX_res = e.nativeEvent.locationX - scaledWidth / 2;
-            const axisY_res = (e.nativeEvent.locationY - scaledHeight / 2) * -1;
-            setAxisX(axisX_res);
-            setAxisY(axisY_res);
-          }}
-        >
-          <NodePlayerView
-            style={{
-              position: "absolute",
-              bottom: 0,
-              backgroundColor: "black",
-              width: scaledWidth,
-              height: scaledHeight,
-              zIndex: 5,
-            }}
-            ref={(vp) => setMyRef(vp)}
-            inputUrl={streamingDevice.url}
-            scaleMode="ScaleAspectFit"
-            bufferTime={100}
-            maxBufferTime={1000}
-            autoplay
-            // onStatus={() => console.log("on status func")}
-            renderType="SURFACEVIEW"
-          />
-        </TouchableWithoutFeedback>
-        {/*<View*/}
-        {/*  style={{*/}
-        {/*    position: "absolute",*/}
-        {/*    bottom: 0,*/}
-        {/*    width: 900,*/}
-        {/*    height: 600,*/}
-        {/*    backgroundColor: "red"*/}
-        {/*  }}*/}
-        {/*>*/}
-        <View style={styles.header}>
-          {/** Home Screen Button */}
-          <TouchableWithoutFeedback
-            onPress={() => {
-              if (forceUpload) {
-                props.setScreen(S.upload);
-              } else {
-                props.setScreen(S.home);
-              }
-            }}
-            style={{ zIndex: 100 }}
-          >
-            <Image
-              source={require("../Assets/Icons/logo.png")}
-              style={{ width: 490 / 10, height: 367 / 10 }}
-            />
-          </TouchableWithoutFeedback>
-          {/** Height indication */}
-          <View pointerEvents="none" style={styles.telemetryBox}>
-            <Image
-              source={
-                droneTele.wifiIcon === 0
-                  ? require("../Assets/Icons/wifi0.png")
-                  : droneTele.wifiIcon === 1
-                  ? require("../Assets/Icons/wifi1.png")
-                  : droneTele.wifiIcon === 2
-                  ? require("../Assets/Icons/wifi2.png")
-                  : droneTele.wifiIcon === 3
-                  ? require("../Assets/Icons/wifi3.png")
-                  : require("../Assets/Icons/wifi0.png")
-              }
-              style={{ width: 920 / 26, height: 392 / 26 }}
-            />
-            <Text style={styles.telemetryInfo}>{droneTele.batStatus}%</Text>
-            <Image
-              source={require("../Assets/Icons/battery.png")}
-              style={{
-                width: 13 / 2,
-                height: 24 / 2,
-                backgroundSize: "cover",
-                marginLeft: -4,
-              }}
-            />
-            <Text style={styles.telemetryInfo}>|</Text>
-            <Text style={[styles.telemetryInfo, styles.height]}>
-              {gpsTele.altitude ? parseFloat(gpsTele.altitude / 100) : 0}m
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 50,
-              borderStyle: "solid",
-              borderColor: "#fff",
-              borderWidth: 1,
-              // marginRight: 10,
-              position: "absolute",
-              right: 55,
-              top: 9,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => setNavCommand("command")}
-          >
-            <Text style={{ color: "#fff" }}>C</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 50,
-              borderStyle: "solid",
-              borderColor: "#fff",
-              borderWidth: 1,
-              // marginRight: 10,
-              position: "absolute",
-              right: 95,
-              top: 9,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => setNavCommand("emergency")}
-          >
-            <Text style={{ color: "#fff" }}>E</Text>
-          </TouchableOpacity>
-          <Image
-            source={require("../Assets/StaticLifeGuards/man.jpg")}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 50,
-            }}
-          />
         </View>
-
-        <JoystickRight setNavCommand={setNavCommand} />
-        <JoystickLeft setNavCommand={setNavCommand} />
+      </Modal>
+      {/** Video Stream component + touch handler */}
+      <TouchableWithoutFeedback
+        onPress={(e) => {
+          // if (!hasStarted) return;
+          if (isNavWorking && navModalVisible) return;
+          const axisX_res = e.nativeEvent.locationX - scaledWidth / 2;
+          const axisY_res = (e.nativeEvent.locationY - scaledHeight / 2) * -1;
+          setAxisX(axisX_res);
+          setAxisY(axisY_res);
+        }}
+      >
+        <NodePlayerView
+          style={{
+            position: "absolute",
+            bottom: 0,
+            backgroundColor: "black",
+            width: scaledWidth,
+            height: scaledHeight,
+            zIndex: 5,
+          }}
+          ref={(vp) => setMyRef(vp)}
+          inputUrl={streamingDevice.url}
+          scaleMode="ScaleAspectFit"
+          bufferTime={100}
+          maxBufferTime={1000}
+          autoplay
+          // onStatus={() => console.log("on status func")}
+          renderType="SURFACEVIEW"
+        />
+      </TouchableWithoutFeedback>
+      {/*<View*/}
+      {/*  style={{*/}
+      {/*    position: "absolute",*/}
+      {/*    bottom: 0,*/}
+      {/*    width: 900,*/}
+      {/*    height: 600,*/}
+      {/*    backgroundColor: "red"*/}
+      {/*  }}*/}
+      {/*>*/}
+      <View style={styles.header}>
+        {/** Home Screen Button */}
         <TouchableWithoutFeedback
           onPress={() => {
-            if (droneOption === "takeoff") {
-              setNavCommand("takeoff");
-              setDroneOption("land");
+            if (forceUpload) {
+              props.setScreen(S.upload);
             } else {
-              setNavCommand("land");
-              setDroneOption("takeoff");
+              props.setScreen(S.home);
             }
           }}
+          style={{ zIndex: 100 }}
         >
           <Image
-            source={
-              droneOption === "takeoff"
-                ? require("../Assets/Icons/takeoff_icon.png")
-                : require("../Assets/Icons/landing_drone_White.png")
-            }
-            style={{
-              width: 512 / 7,
-              height: 512 / 7,
-              zIndex: 100,
-              position: "absolute",
-              left: 307,
-              bottom: 0,
-            }}
+            source={require("../Assets/Icons/logo.png")}
+            style={{ width: 490 / 10, height: 367 / 10 }}
           />
         </TouchableWithoutFeedback>
-
-        {/*</View>*/}
-        {/*  /!** Home Indication *!/*/}
-        {/*<View*/}
-        {/*  style={{*/}
-        {/*    position: "absolute",*/}
-        {/*    top: scaledHeight / 2,*/}
-        {/*    left: scaledWidth / 2,*/}
-        {/*    zIndex: 100*/}
-        {/*  }}*/}
-        {/*  pointerEvents="none"*/}
-        {/*>*/}
-        {/*  <Text>O</Text>*/}
-        {/*</View>*/}
-        {/*  /!** Navigation in process Modal *!/*/}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          closable={navigatingModalClosable}
-          maskClosable={false}
-          visible={isNavigating && navigatingModalVisible}
-          title="Navigating"
-          onClose={() => setNavigatingModalVisible(false)}
+        {/** Telemetry Feedback */}
+        <View pointerEvents="none" style={styles.telemetryBox}>
+          <Image
+            source={
+              droneTele.wifiIcon === 0
+                ? require("../Assets/Icons/wifi0.png")
+                : droneTele.wifiIcon === 1
+                ? require("../Assets/Icons/wifi1.png")
+                : droneTele.wifiIcon === 2
+                ? require("../Assets/Icons/wifi2.png")
+                : droneTele.wifiIcon === 3
+                ? require("../Assets/Icons/wifi3.png")
+                : require("../Assets/Icons/wifi0.png")
+            }
+            style={{ width: 920 / 26, height: 392 / 26 }}
+          />
+          <Text style={styles.telemetryInfo}>{droneTele.batStatus}%</Text>
+          <Image
+            source={require("../Assets/Icons/battery.png")}
+            style={{
+              width: 13 / 2,
+              height: 24 / 2,
+              backgroundSize: "cover",
+              marginLeft: -4,
+            }}
+          />
+          <Text style={styles.telemetryInfo}>|</Text>
+          <Text style={[styles.telemetryInfo, styles.height]}>
+            {gpsTele.altitude ? parseFloat(gpsTele.altitude / 100) : 0}m
+          </Text>
+        </View>
+        {/** "command" */}
+        <TouchableOpacity
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 50,
+            borderStyle: "solid",
+            borderColor: "#fff",
+            borderWidth: 1,
+            // marginRight: 10,
+            position: "absolute",
+            right: 55,
+            top: 9,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => setNavCommand("command")}
         >
-          <View style={{ paddingVertical: 20 }}>
-            <ActivityIndicator size="large" color="#0077be" />
-          </View>
-        </Modal>
-        {/*  /!** Feedback Modal *!/*/}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={showNavStatus && isStatusModal}
-          closable
-          maskClosable
-          onClose={() => setIsStatusModal(false)}
-          onRequestClose={() => setIsStatusModal(false)}
-          title={
-            navigationStatus.status ? "Navigation Success" : "Navigation Failed"
-          }
+          <Text style={{ color: "#fff" }}>C</Text>
+        </TouchableOpacity>
+        {/** "emergency" */}
+        <TouchableOpacity
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 50,
+            borderStyle: "solid",
+            borderColor: "#fff",
+            borderWidth: 1,
+            // marginRight: 10,
+            position: "absolute",
+            right: 95,
+            top: 9,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => setNavCommand("emergency")}
         >
-          <View style={{ paddingVertical: 20 }}>
-            <Text>start time in ms: {navigationStatus.startTime}</Text>
-            <Text>finish time in ms: {navigationStatus.finishTime}</Text>
-            <Text>Total time in ms: {navigationStatus.navigationTime}</Text>
-            <Text>Total distance: {navigationStatus.totalDistance}</Text>
-            <Text>
-              Final coordinate reached: (
-              {navigationStatus.reachedCoordinate.lat},{" "}
-              {navigationStatus.reachedCoordinate.lon})
-            </Text>
-            {navigationStatus.reasons.map((reason, i) => (
-              <Text key={i}>{reason}</Text>
-            ))}
-          </View>
-        </Modal>
-        {/*</View>*/}
+          <Text style={{ color: "#fff" }}>E</Text>
+        </TouchableOpacity>
+        {/** user image */}
+        <Image
+          source={require("../Assets/StaticLifeGuards/man.jpg")}
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 50,
+          }}
+        />
       </View>
-    </Provider>
+      {/** joysticks */}
+      <JoystickRight setNavCommand={setNavCommand} />
+      <JoystickLeft setNavCommand={setNavCommand} />
+      {/** land / takeoff */}
+      <TouchableWithoutFeedback
+        onPress={() => {
+          if (droneOption === "takeoff") {
+            setNavCommand("takeoff");
+            setDroneOption("land");
+          } else {
+            setNavCommand("land");
+            setDroneOption("takeoff");
+          }
+        }}
+      >
+        <Image
+          source={
+            droneOption === "takeoff"
+              ? require("../Assets/Icons/takeoff_icon.png")
+              : require("../Assets/Icons/landing_drone_White.png")
+          }
+          style={{
+            width: 512 / 7,
+            height: 512 / 7,
+            zIndex: 100,
+            position: "absolute",
+            left: 307,
+            bottom: 0,
+          }}
+        />
+      </TouchableWithoutFeedback>
+
+      {/*</View>*/}
+      {/*  /!** Home Indication *!/*/}
+      {/*<View*/}
+      {/*  style={{*/}
+      {/*    position: "absolute",*/}
+      {/*    top: scaledHeight / 2,*/}
+      {/*    left: scaledWidth / 2,*/}
+      {/*    zIndex: 100*/}
+      {/*  }}*/}
+      {/*  pointerEvents="none"*/}
+      {/*>*/}
+      {/*  <Text>O</Text>*/}
+      {/*</View>*/}
+    </View>
   );
 };
 const styles = StyleSheet.create({
@@ -404,6 +347,51 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: "row",
     flex: 1,
+  },
+  //modal
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 360,
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalHeader: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    fontSize: 25,
+  },
+  modalStatus: {
+    fontSize: 15,
+    marginBottom: 10,
   },
 });
 

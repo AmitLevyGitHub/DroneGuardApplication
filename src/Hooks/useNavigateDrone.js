@@ -1,47 +1,51 @@
 import React from "react";
 import * as turf from "@turf/turf";
 import { piCameraInfo } from "../Assets/consts";
+const autoCloseTimeWhenFinished = 3000;
 export default function useNavigateDrone(socket, props) {
   const [axisX, setAxisX] = React.useState(-8000);
   const [axisY, setAxisY] = React.useState(-8000);
   const [navCommand, setNavCommand] = React.useState("none");
-  const [isNavigating, setNavigating] = React.useState(false);
-  const [showNavStatus, setShowNavStatus] = React.useState(false);
-  const [navigatingModalClosable, setClosable] = React.useState(false);
-  const [navigationStatus, setNavigationStatus] = React.useState({
-    status: false,
-    startTime: -1,
-    finishTime: -1,
-    navigationTime: -1,
-    targetCoordinate: { lat: -1, lon: -1 },
-    totalDistance: -1,
-    reachedCoordinate: { lat: -1, lon: -1 },
-    reasons: ["you should not see this 1", "you should not see this 2"],
-  });
   //
-  //socket callback
+  const [isNavWorking, setIsNavWorking] = React.useState(false);
+  const [navModalVisible, setNavModalVisible] = React.useState(false);
+  const [navModalTitle, setNavModalTitle] = React.useState("Navigating");
+  const [navStatus, setNavStatus] = React.useState(
+    "Don't close this popup until confirmation"
+  );
+  /**
+   * socket callback- called when navFinished emitted from server
+   * auto close modal after specific time (must be done with explicit state change)
+   */
   React.useEffect(() => {
     if (!socket) return;
-    // if (!socket.connected) return;
-    console.log("in useNavigateDrone will define socket.on()");
+    let isSubscribed = true;
+    let autoCloseTimeout = null;
     socket.on("navFinished", (navData) => {
-      console.log(
-        `navFinished with navData = ${JSON.stringify(navData, null, 2)}`
-      );
-      setNavigationStatus({ ...navData });
-      //
-      console.log("will set showNavStatus to true");
-      setShowNavStatus(true);
-      setNavigating(false);
+      const stringifiedNavData = JSON.stringify(navData, null, 2);
+      console.log(`navFinished with navData = ${stringifiedNavData}`);
+      setIsNavWorking(false);
+      navData.status
+        ? setNavModalTitle("Navigation Success")
+        : setNavModalTitle("Navigation Failed");
+      setNavStatus(navData.message);
+      //auto close
+      autoCloseTimeout = setTimeout(() => {
+        isSubscribed && setNavModalVisible(false);
+      }, autoCloseTimeWhenFinished);
     });
-  }, [socket]); /** [socket] */
-  //
-  //navigation
+    return function cleanup() {
+      isSubscribed = false;
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
+    };
+  }, [socket]);
+  /**
+   * emit event to server
+   * UI is blocked until 'navFinished' received
+   * or until user closes modal
+   */
   React.useEffect(() => {
     if ((axisX <= -8000 || axisY <= -8000) && navCommand === "none") return;
-    /**
-     * handle not connected modal!
-     */
     if (!socket) return;
     if (!socket.connected) {
       if (navCommand !== "none") {
@@ -56,30 +60,23 @@ export default function useNavigateDrone(socket, props) {
       setAxisY(-8001);
       return;
     }
-    /**
-     * UI is blocked until 'navFinished' event is emitted from server
-     * or until specific time passes
-     */
-    let closeableTimeout = null;
-    /**
-     * default commands
-     */
-    if (navCommand !== "none") {
-      console.log(`emitting type: ${navCommand} to server`);
+    //
+    if (navCommand === "emergency") {
+      console.log(`emitting type: emergency to server`);
       socket.emit("command", { type: navCommand });
       setNavCommand("none");
       setAxisX(-8001);
       setAxisY(-8001);
+      return;
+    }
+    //
+    setNavModalVisible(true);
+    setIsNavWorking(true);
+    setNavStatus("Don't close this popup");
+    if (navCommand !== "none") {
+      console.log(`emitting type: ${navCommand} to server`);
+      socket.emit("command", { type: navCommand });
     } else {
-      /**
-       * press commands
-       */
-      setClosable(false);
-      setNavigating(true);
-      const closableWaitTime = 3000;
-      closeableTimeout = setTimeout(() => {
-        setClosable(true);
-      }, closableWaitTime);
       console.log(`
       starting navigation with data from drone:
       props.droneHeightCM = ${props.droneHeightCM}
@@ -112,40 +109,17 @@ export default function useNavigateDrone(socket, props) {
     setAxisY(-8001);
   }, [axisX, axisY, navCommand]);
   /**
-   * React Native Modal can't show itself for a given time
-   * must do it with explicit state change
-   */
-  React.useEffect(() => {
-    let showStatusTimeout = null;
-    const showStatusTime = 5000;
-    let isSubscribed;
-    if (showNavStatus) {
-      (async () => {
-        isSubscribed = true;
-        await new Promise((resolve) => {
-          showStatusTimeout = setTimeout(() => {
-            return resolve(true);
-          }, showStatusTime);
-        });
-        isSubscribed && setShowNavStatus(false);
-      })();
-    }
-    return function cleanup() {
-      isSubscribed = false;
-      if (showStatusTimeout) clearTimeout(showStatusTimeout);
-    };
-  }, [showNavStatus]);
-  /**
    * return..
    */
   return [
     setAxisX,
     setAxisY,
-    isNavigating,
-    showNavStatus,
-    navigationStatus,
-    navigatingModalClosable,
     setNavCommand,
+    isNavWorking,
+    navModalVisible,
+    setNavModalVisible,
+    navModalTitle,
+    navStatus,
   ];
 }
 /**

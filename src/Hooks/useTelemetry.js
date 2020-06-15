@@ -1,7 +1,7 @@
 import React from "react";
 import RNFS from "react-native-fs";
 import { FN, navConsts, shouldSave } from "../Assets/consts";
-export default function useTelemetry(socket) {
+export default function useTelemetry(socket, hasStarted) {
   //tele
   const [droneTele, setDroneTele] = React.useState({
     batStatus: 100,
@@ -20,7 +20,7 @@ export default function useTelemetry(socket) {
   //
   React.useEffect(() => {
     const save = shouldSave.tele;
-    if (!socket) return;
+    if (!hasStarted && !socket) return;
     // if (!socket.connected) return;
     socket.on("allTelemetry", (receivedTele) => {
       console.log(
@@ -133,6 +133,6 @@ export default function useTelemetry(socket) {
         }
       })();
     });
-  }, [socket]);
+  }, [socket, hasStarted]);
   return [droneTele, gpsTele];
 }

@@ -2,9 +2,7 @@
  * toggle saving files
  */
 export const shouldSave = {
-  // tele: false,
   tele: true,
-  // video: false,
   video: true,
 };
 export const isUploadDisabled = true;
@@ -34,27 +32,6 @@ export const streamingDevice = {
   url: `rtsp://${streamDeviceDomain}:8160/`,
   // url: `udp://${streamDeviceDomain}:11111`,
   // url: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
-};
-/**
- * camera details
- */
-function lenFormula(f, Dxy) {
-  function F(n) {
-    return parseFloat(n);
-  }
-  function toDEG(rad) {
-    return F(F(rad) * F(180 / Math.PI));
-  }
-  const rad = F(2 * Math.atan(F(Dxy / F(f * 2))));
-  const deg = toDEG(rad);
-  return { rad, deg };
-}
-export const piCameraInfo = {
-  focalLength: 3.6, //mm
-  xDimensions: 3.6, //mm
-  yDimensions: 2.7, //mm
-  horizontalDegree: { ...lenFormula(3.6, 3.6) },
-  verticalDegree: { ...lenFormula(3.6, 2.7) },
 };
 /**
  * screens
@@ -89,4 +66,25 @@ export const AS = {
   uploadStatus: "@uploadStatus",
   //
   emergencyEvent: "@emergencyEvent",
+};
+/**
+ * camera details
+ */
+function lenFormula(f, Dxy) {
+  function F(n) {
+    return parseFloat(n);
+  }
+  function toDEG(rad) {
+    return F(F(rad) * F(180 / Math.PI));
+  }
+  const rad = F(2 * Math.atan(F(Dxy / F(f * 2))));
+  const deg = toDEG(rad);
+  return { rad, deg };
+}
+export const piCameraInfo = {
+  focalLength: 3.6, //mm
+  xDimensions: 3.6, //mm
+  yDimensions: 2.7, //mm
+  horizontalDegree: { ...lenFormula(3.6, 3.6) },
+  verticalDegree: { ...lenFormula(3.6, 2.7) },
 };
