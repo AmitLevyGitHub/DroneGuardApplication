@@ -61,6 +61,7 @@ const StartModal = (props) => {
     return function cleanup() {
       isSubscribed = false;
       if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
+      socket.off("startFinished");
     };
   }, [socket]);
   /**

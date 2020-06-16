@@ -22,7 +22,18 @@ import usePrepareUpload from "../Hooks/usePrepareUpload";
 import useUploadEvents from "../Hooks/useUploadEvents";
 //
 const UploadScreen = (props) => {
-  const [isPreparing, eventsStatus, videoStat, tokenIDs] = usePrepareUpload();
+  const [requirePrepare, setRequirePrepare] = React.useState(true);
+  const [uploadReady, setUploadReady] = React.useState(false);
+  //prepare
+  const [
+    prepError,
+    isPreparing,
+    eventsStatus,
+    videoStat,
+    tokenIDs,
+    firstTeleTime,
+  ] = usePrepareUpload(requirePrepare, props.userEvents);
+  //handle
   const [handleEvents, setHandleEvents] = React.useState(false);
   const [
     currentEvent,
@@ -34,9 +45,24 @@ const UploadScreen = (props) => {
     handleEvents,
     eventsStatus,
     videoStat,
-    tokenIDs
+    tokenIDs,
+    firstTeleTime
   );
+  //
   const [showExitModal, setExitModal] = React.useState(false);
+  const deleteThenExit = () => {
+    RNFFmpeg.cancel();
+    AsyncStorage.removeItem(AS.uploadStatus);
+    props.setUserEvents([]);
+    RNFS.unlink(RNFS.ExternalDirectoryPath)
+      .then(() => {
+        console.log("files folder deleted");
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+    props.setScreen(S.home);
+  };
   //
   return (
     <Provider>
@@ -44,24 +70,13 @@ const UploadScreen = (props) => {
         source={require("../Assets/Icons/home_bg.png")}
         style={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: "column",
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
           backgroundSize: "cover",
         }}
       >
-        {/** preparing upload modal */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isPreparing}
-          title="Loading Events List"
-        >
-          <View style={{ paddingVertical: 20 }}>
-            <ActivityIndicator size="large" color="#0077be" />
-          </View>
-        </Modal>
         {/** exit modal */}
         <Modal
           animationType="fade"
@@ -73,22 +88,7 @@ const UploadScreen = (props) => {
         >
           <View style={{ paddingVertical: 20 }}>
             <Text>If you exit now data will be permanently lost!</Text>
-            <Button
-              title="exit"
-              onPress={() => {
-                RNFFmpeg.cancel();
-                AsyncStorage.removeItem(AS.uploadStatus);
-                RNFS.unlink(RNFS.ExternalDirectoryPath)
-                  .then(() => {
-                    console.log("files folder deleted");
-                  })
-                  .catch((err) => {
-                    console.log(err.message);
-                  });
-
-                props.setScreen(S.home);
-              }}
-            />
+            <Button title="exit" onPress={deleteThenExit} />
           </View>
         </Modal>
         {/** header */}
@@ -98,10 +98,10 @@ const UploadScreen = (props) => {
               if (forceUpload) {
                 return;
               } else {
-                if (!loopFinished) {
+                if (!loopFinished || failedEvents.length) {
                   setExitModal(true);
                 } else {
-                  props.setScreen(S.home);
+                  deleteThenExit();
                 }
               }
             }}
@@ -121,7 +121,6 @@ const UploadScreen = (props) => {
           >
             <Text>Clear AS.uploadStatus</Text>
           </TouchableOpacity>
-
           <Image
             source={require("../Assets/StaticLifeGuards/man.jpg")}
             style={{
@@ -136,109 +135,196 @@ const UploadScreen = (props) => {
             }}
           />
         </View>
-        {/** main wrapper */}
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
-          {/** Current Event */}
+        {!uploadReady ? (
           <View
             style={{
               display: "flex",
-              flex: 3,
-              flexDirection: "column",
-              justifyContent: "flex-start",
-              alignItems: "flex-start",
               backgroundColor: "rgba(255, 255, 255, 0.2)",
-              padding: 5,
+              padding: 20,
               borderRadius: 4,
-              height: "100%",
-              width: "100%",
             }}
           >
-            {currentEvent.index === -1 && (
-              <TouchableOpacity
-                style={{ backgroundColor: "white" }}
-                onPress={() => {
-                  console.log("setting handleEvent to true");
-                  setHandleEvents(true);
-                }}
-              >
-                <Text>Start handling all events</Text>
-              </TouchableOpacity>
-            )}
-            {currentEvent.index >= 0 && !loopFinished && (
-              <React.Fragment>
-                <Text>handling event {currentEvent.index}</Text>
-                <Text>startTime: {currentEvent.startTime}</Text>
-                <Text>{workStatus}</Text>
-              </React.Fragment>
-            )}
-            {currentEvent.index >= 0 && loopFinished && (
-              <React.Fragment>
-                <Text>Finished handling all events</Text>
-                {failedEvents.length === 0 && (
-                  <Text>all events uploaded correctly</Text>
-                )}
-                {failedEvents.length > 0 && (
-                  <React.Fragment>
-                    <Text>
-                      {failedEvents.length} events failed, unfortunately these
-                      events can not be trimmed and uploaded
-                    </Text>
-                    {failedEvents.map((failedEvent) => (
-                      <Text>
-                        event {failedEvent.index + 1}: {failedEvent.status}
-                      </Text>
-                    ))}
-                  </React.Fragment>
-                )}
-              </React.Fragment>
-            )}
+            <Text style={{ color: "#ffffff", fontSize: 40, paddingBottom: 10 }}>
+              {isPreparing
+                ? "Preparing Files to upload"
+                : prepError
+                ? "Error Ocurred"
+                : "You can start"}
+            </Text>
+            {isPreparing && <ActivityIndicator size="large" color="#0077be" />}
+            <Text
+              style={{
+                color: "#ffffff",
+                fontSize: 25,
+                alignSelf: "center",
+                paddingBottom: 10,
+              }}
+            >
+              {prepError}
+            </Text>
+            <Button
+              title={prepError ? "Try Again" : "Continue"}
+              onPress={() => {
+                if (prepError) {
+                  setRequirePrepare(!requirePrepare);
+                } else {
+                  setUploadReady(true);
+                }
+              }}
+            />
           </View>
-          {/** All Events with status */}
-          <ScrollView
+        ) : (
+          <View
             style={{
               display: "flex",
-              flex: 2,
-              flexDirection: "column",
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              padding: 5,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "rgba(0, 0, 0, 0.2)",
+              padding: 10,
               borderRadius: 4,
-              height: "100%",
-              width: "100%",
+              width: "95%",
+              height: "80%",
+              position: "absolute",
+              top: 62,
             }}
           >
-            <Text>Total events to handle: {eventsStatus.length}</Text>
-            {eventsStatus.map((event) => (
-              <TouchableOpacity>
+            {/** Current Event */}
+            <View
+              style={{
+                display: "flex",
+                flex: 2,
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "flex-start",
+              }}
+            >
+              {/** start button */}
+              {currentEvent.index === -1 && (
+                <TouchableOpacity
+                  style={{
+                    borderColor: "#ffffff",
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    alignSelf: "center",
+                  }}
+                  onPress={() => {
+                    console.log("setting handleEvent to true");
+                    setHandleEvents(true);
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#ffffff",
+                      fontSize: 30,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3,
+                    }}
+                  >
+                    Start handling all events
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {/** current event status */}
+              {currentEvent.index >= 0 && !loopFinished && (
+                <React.Fragment>
+                  <Text
+                    style={{
+                      color: "#ffffff",
+                      fontSize: 35,
+                      alignSelf: "center",
+                    }}
+                  >
+                    handling event {currentEvent.index + 1}
+                  </Text>
+                  <Text style={{ color: "#ffffff", fontSize: 20 }}>
+                    duration:{" "}
+                    {parseInt(
+                      (currentEvent.endTime - currentEvent.startTime) / 1000
+                    )}{" "}
+                    seconds
+                  </Text>
+                  <Text style={{ color: "#ffffff", fontSize: 20 }}>
+                    startTime: {currentEvent.startTime}
+                  </Text>
+                  <Text style={{ color: "#ffffff", fontSize: 20 }}>
+                    {workStatus}
+                  </Text>
+                </React.Fragment>
+              )}
+              {/** finish feedback */}
+              {currentEvent.index >= 0 && loopFinished && (
+                <React.Fragment>
+                  <Text
+                    style={{
+                      color: "#ffffff",
+                      fontSize: 35,
+                      alignSelf: "center",
+                    }}
+                  >
+                    Finished handling all events
+                  </Text>
+                  {failedEvents.length === 0 && (
+                    <Text style={{ color: "#ffffff", fontSize: 20 }}>
+                      all events uploaded correctly
+                    </Text>
+                  )}
+                  {failedEvents.length > 0 && (
+                    <React.Fragment>
+                      <Text style={{ color: "#ffffff", fontSize: 20 }}>
+                        {failedEvents.length} events failed, unfortunately these
+                        events can not be trimmed and uploaded
+                      </Text>
+                      {failedEvents.map((failedEvent) => (
+                        <Text
+                          key={failedEvent.index + 1}
+                          style={{ color: "#ffffff", fontSize: 20 }}
+                        >
+                          event {failedEvent.index + 1}: {failedEvent.status}
+                        </Text>
+                      ))}
+                    </React.Fragment>
+                  )}
+                </React.Fragment>
+              )}
+            </View>
+            {/** All Events with status */}
+            <ScrollView
+              persistentScrollbar={true}
+              style={{
+                display: "flex",
+                flex: 1,
+                flexDirection: "column",
+                paddingHorizontal: 10,
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 25, marginBottom: 8 }}>
+                Total Events: {eventsStatus.length}
+              </Text>
+              {eventsStatus.map((event) => (
+                // <TouchableOpacity key={event.startTime}>
                 <View
                   style={{
                     display: "flex",
                     flexDirection: "row",
                     justifyContent: "space-between",
+                    marginBottom: 8,
                   }}
+                  key={event.startTime}
                 >
-                  <Text>Event {event.index + 1}</Text>
-                  {event.failed ? (
-                    <Text>failed</Text>
-                  ) : (
-                    <Text>
-                      {event.index === currentEvent.index
-                        ? "working"
-                        : "pending"}
-                    </Text>
-                  )}
+                  <Text style={{ color: "#ffffff", fontSize: 18 }}>
+                    Event {event.index + 1},{" "}
+                    {((event.endTime - event.startTime) / 1000).toFixed(0)} sec
+                  </Text>
+                  <Text style={{ color: "#ffffff", fontSize: 18 }}>
+                    {event.status}
+                  </Text>
                 </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+                // </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </ImageBackground>
     </Provider>
   );
@@ -252,6 +338,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     position: "absolute",
+    backgroundColor: "rgba(66, 66, 66, 0.3)",
     top: 0,
     left: 0,
     zIndex: 100,
@@ -272,6 +359,8 @@ const styles = StyleSheet.create({
 
 UploadScreen.propTypes = {
   setScreen: PropTypes.func.isRequired,
+  setUserEvents: PropTypes.func.isRequired,
+  userEvents: PropTypes.array,
 };
 
 export default UploadScreen;

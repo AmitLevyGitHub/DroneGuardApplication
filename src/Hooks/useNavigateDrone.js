@@ -37,6 +37,7 @@ export default function useNavigateDrone(socket, props) {
     return function cleanup() {
       isSubscribed = false;
       if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
+      socket.off("navFinished");
     };
   }, [socket]);
   /**

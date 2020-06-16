@@ -12,6 +12,7 @@ import { forceUpload } from "../Assets/consts";
 //
 const Router = () => {
   const [screen, setScreen] = React.useState("load");
+  const [userEvents, setUserEvents] = React.useState([]);
   React.useEffect(() => {
     (async () => {
       //
@@ -70,8 +71,20 @@ const Router = () => {
       {screen === S.login && <LogInScreen setScreen={setScreen} />}
       {screen === S.beaches && <BeachesScreen setScreen={setScreen} />}
       {screen === S.home && <HomeScreen setScreen={setScreen} />}
-      {screen === S.stream && <StreamScreen setScreen={setScreen} />}
-      {screen === S.upload && <UploadScreen setScreen={setScreen} />}
+      {screen === S.stream && (
+        <StreamScreen
+          setScreen={setScreen}
+          setUserEvents={setUserEvents}
+          userEvents={userEvents}
+        />
+      )}
+      {screen === S.upload && (
+        <UploadScreen
+          setScreen={setScreen}
+          setUserEvents={setUserEvents}
+          userEvents={userEvents}
+        />
+      )}
     </React.Fragment>
   );
 };

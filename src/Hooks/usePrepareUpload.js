@@ -2,13 +2,16 @@ import React from "react";
 import AsyncStorage from "@react-native-community/async-storage";
 import RNFS from "react-native-fs";
 import { RNFFprobe } from "react-native-ffmpeg";
-import { AS, FN } from "../Assets/consts";
-export default function usePrepareUpload() {
+import { AS, FN, navConsts } from "../Assets/consts";
+export default function usePrepareUpload(requirePrepare, userEvents) {
   const [isPreparing, setPreparing] = React.useState(true);
+  const [prepError, setPrepError] = React.useState(null);
   const [eventsStatus, setEventsStatus] = React.useState([]);
   const [videoStat, setVideoStat] = React.useState(null);
   const [tokenIDs, setTokenIDs] = React.useState(null);
+  const [firstTeleTime, setFirstTeleTime] = React.useState(0);
   React.useEffect(() => {
+    console.log("preparing");
     let isSubscribed = true;
     (async () => {
       setPreparing(true);
@@ -21,6 +24,7 @@ export default function usePrepareUpload() {
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
         console.log(`ERROR reading ${AS.userToken} from async storage!\n${m}`);
+        setPrepError(m);
       }
       let lifeGuardId = null;
       try {
@@ -30,6 +34,7 @@ export default function usePrepareUpload() {
         console.log(
           `ERROR reading ${AS.lifeGuardId} from async storage!\n${m}`
         );
+        setPrepError(m);
       }
       let beachId = null;
       try {
@@ -37,6 +42,7 @@ export default function usePrepareUpload() {
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
         console.log(`ERROR reading ${AS.beachId} from async storage!\n${m}`);
+        setPrepError(m);
       }
       setTokenIDs({
         token,
@@ -56,6 +62,7 @@ export default function usePrepareUpload() {
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
         console.log(`ERROR reading file ${FN.video}: ${m}`);
+        setPrepError(m);
       }
       try {
         const vidInfo = await RNFFprobe.getMediaInformation(videoPath);
@@ -67,6 +74,7 @@ export default function usePrepareUpload() {
         console.log(
           `error executing RNFFprobe.getMediaInformation for file ${FN.video}\n${m}`
         );
+        setPrepError(m);
       }
       setVideoStat({
         startTime: vidStartTime,
@@ -75,17 +83,41 @@ export default function usePrepareUpload() {
         startTimeInFile: vidStartTimeInFile,
       });
       /**
-       * read eventsStatus from async storage / create it from emergency events file
+       * first telemetry time
+       */
+      let ALL_telemetry = [];
+      try {
+        const srcTelemetryPath =
+          RNFS.ExternalDirectoryPath + "/" + FN.telemetry;
+        let telemetryRead = "";
+        telemetryRead = await RNFS.readFile(srcTelemetryPath);
+        telemetryRead = telemetryRead.substring(0, telemetryRead.length - 1);
+        telemetryRead = "[" + telemetryRead + "]";
+        ALL_telemetry = JSON.parse(telemetryRead);
+        setFirstTeleTime(ALL_telemetry[0].time);
+        console.log(`first tele time = ${ALL_telemetry[0].time}`);
+      } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(`ERROR reading file ${FN.telemetry}\n${m}`);
+        setPrepError(m);
+      }
+      /**
+       * read uploadStatus (emergency events list) from async storage
+       * or create it from emergency events file, while respecting user events
        */
       let uploadStatus = [];
       try {
         const stringValue = await AsyncStorage.getItem(AS.uploadStatus);
         if (stringValue) uploadStatus = JSON.parse(stringValue);
       } catch (e) {
-        console.log(`error reading ${AS.uploadStatus}!`);
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(
+          `ERROR reading ${AS.uploadStatus} from async storage!\n${m}`
+        );
+        setPrepError(m);
       }
       //
-      //if not first time return
+      //if not first time visiting upload screen return
       if (uploadStatus.length > 0 && uploadStatus[0] !== 1) {
         console.log("using emergency events from local storage");
         setEventsStatus(uploadStatus);
@@ -94,35 +126,47 @@ export default function usePrepareUpload() {
         return;
       }
       //
-      //if first time read from file
-      console.log("loading emergency events from file");
-      const emergencyEventsPath = RNFS.ExternalDirectoryPath + "/" + FN.events;
-      let ALL_events = null;
-      try {
-        let dataRead = "";
-        dataRead = await RNFS.readFile(emergencyEventsPath);
-        dataRead = dataRead.substring(0, dataRead.length - 1);
-        dataRead = "[" + dataRead + "]";
-        // console.log(dataRead);
-        ALL_events = JSON.parse(dataRead);
-        console.log(`emergency events found: ${ALL_events.length} total`);
-      } catch (e) {
-        console.log(
-          `ERROR reading file ${FN.events}: ${
-            e.hasOwnProperty("message") ? e.message : e
-          }`
-        );
+      //if first time visiting upload screen create list from all telemetry file
+      console.log("creating emergency events list from file");
+      const { emergencyHeight } = navConsts;
+      let didTakeoff = false;
+      let eventStartTime = -1;
+      let emergencyEventsDetected = [];
+      for (let i = 0; i < ALL_telemetry.length; i++) {
+        const currTele = ALL_telemetry[i];
+        if (!didTakeoff) {
+          if (currTele.height > emergencyHeight) {
+            didTakeoff = true;
+          }
+        } else {
+          if (eventStartTime === -1 && currTele.height <= emergencyHeight) {
+            eventStartTime = currTele.time;
+            console.log(`emergency event start detected: ${eventStartTime}`);
+          }
+          if (eventStartTime > -1 && currTele.height > emergencyHeight) {
+            console.log(`emergency events end detected: ${currTele.time}`);
+            emergencyEventsDetected.push({
+              startTime: eventStartTime,
+              endTime: currTele.time,
+            });
+            eventStartTime = -1;
+          }
+        }
       }
       //
+      //combine user events with detected events
+      //TO-DO! remove overlapping events
+      const emergencyEvents = [...emergencyEventsDetected, ...userEvents];
+      //
       //create eventsStatus array
-      const t = ALL_events.map((event, i) => ({
+      const t = emergencyEvents.map((event, i) => ({
         startTime: event.startTime,
         endTime: event.endTime,
         index: i,
         lifeGuardID: null,
         beachID: null,
         //
-        failed: false,
+        status: "pending",
         directoryName: null,
         directoryPath: null,
         ID: null,
@@ -149,11 +193,9 @@ export default function usePrepareUpload() {
       try {
         await AsyncStorage.setItem(AS.uploadStatus, JSON.stringify(t));
       } catch (e) {
-        console.log(
-          `ERROR setting ${AS.uploadStatus} in async storage!\n${
-            e.hasOwnProperty("message") ? e.message : e
-          }`
-        );
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        console.log(`ERROR setting ${AS.uploadStatus} in async storage!\n${m}`);
+        setPrepError(m);
       }
       //
       isSubscribed && setPreparing(false);
@@ -161,7 +203,14 @@ export default function usePrepareUpload() {
     return function cleanup() {
       isSubscribed = false;
     };
-  }, []);
+  }, [requirePrepare]);
   //
-  return [isPreparing, eventsStatus, videoStat, tokenIDs];
+  return [
+    prepError,
+    isPreparing,
+    eventsStatus,
+    videoStat,
+    tokenIDs,
+    firstTeleTime,
+  ];
 }

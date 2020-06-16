@@ -11,7 +11,7 @@ export const forceUpload = false;
  * navigation consts
  */
 export const navConsts = {
-  emergencyHeight: 10,
+  emergencyHeight: 249,
 };
 /**
  * telemetry socket
@@ -51,10 +51,11 @@ const videoFormat = "mp4";
 export const FN = {
   video: `streamVideo.${videoFormat}`,
   telemetry: "allTelemetry.txt",
-  events: "emergencyEvents.txt",
   logger: "logger.txt",
   appErrors: "appErrors.txt",
   eventPrefix: "event",
+  //
+  events: "emergencyEvents.txt",
 };
 /**
  * async storage keys

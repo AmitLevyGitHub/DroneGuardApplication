@@ -13,7 +13,8 @@ export default function useUploadEvents(
   handleEvents,
   eventsStatus,
   videoStat,
-  tokenIDs
+  tokenIDs,
+  firstTeleTime
 ) {
   const [currentEvent, setCurrentEvent] = React.useState({ index: -1 });
   const [workStatus, setWorkStatus] = React.useState("creating directory");
@@ -27,25 +28,30 @@ export default function useUploadEvents(
       for (let i = 0; i < eventsStatus.length; i++) {
         const event = eventsStatus[i];
         console.log(
-          `handling emergency event number: ${i} with start time = ${event.startTime}`
+          `handling emergency event number: ${i + 1} with start time = ${
+            event.startTime
+          }`
         );
         setCurrentEvent(event);
-        if (event.failed) {
-          console.log(`event number ${i} failed, skipping`);
+        if (event.status === "failed") {
+          console.log(`event number ${i + 1} failed before, skipping`);
           continue;
         }
         //
         try {
+          event.status = "working";
           await handleEvent(
             eventsStatus,
             videoStat,
             event,
             setWorkStatus,
-            tokenIDs
+            tokenIDs,
+            firstTeleTime
           );
+          event.status = "done";
         } catch (error) {
           isError = true;
-          event.failed = true;
+          event.status = "failed";
           const newFailedEvents = failedEvents.map((failedEvent) => ({
             ...failedEvent,
           }));
@@ -54,7 +60,8 @@ export default function useUploadEvents(
           //show message for few more seconds?
         }
         console.log(
-          `finished handling emergency event number: ${i} with start time = ${event.startTime}`
+          `finished handling emergency event number: ${i +
+            1} with start time = ${event.startTime}`
         );
       }
       //
@@ -66,7 +73,14 @@ export default function useUploadEvents(
         setLoopFinished(true);
       }
     })();
-  }, [isPreparing, handleEvents, eventsStatus, videoStat, tokenIDs]);
+  }, [
+    isPreparing,
+    handleEvents,
+    eventsStatus,
+    videoStat,
+    tokenIDs,
+    firstTeleTime,
+  ]);
   //
   return [currentEvent, workStatus, loopFinished, failedEvents];
 }
@@ -76,13 +90,22 @@ async function handleEventFake() {
   }
   await sleep(5000);
 }
-function handleEvent(allEvents, videoStat, event, setWorkStatus, tokenIDs) {
+function handleEvent(
+  allEvents,
+  videoStat,
+  event,
+  setWorkStatus,
+  tokenIDs,
+  firstTeleTime
+) {
   return new Promise(async (resolve, reject) => {
     // const beachId = "5ea2d21477f48e08a8e19e4e";
     // const lifeGuardId = "5ed6239e9f40dd001719c3ec";
     const beachId = tokenIDs.beachId;
     const lifeGuardId = tokenIDs.lifeGuardId;
     const token = tokenIDs.token;
+    // const ZERO_time = videoStat.startTime;
+    const ZERO_time = firstTeleTime;
     /**
      * create folder on device
      */
@@ -155,9 +178,9 @@ function handleEvent(allEvents, videoStat, event, setWorkStatus, tokenIDs) {
         const srcVideoPath = RNFS.ExternalDirectoryPath + "/" + FN.video;
         const eventVideoName = `${FN.eventPrefix}_s${event.startTime}.mp4`;
         const eventVideoPath = event.directoryPath + "/" + eventVideoName;
-        console.log(`videoStat.startTime = ${videoStat.startTime}`);
-        const sTime = parseInt((event.startTime - videoStat.startTime) / 1000);
-        const eTime = parseInt((event.endTime - event.startTime) / 1000);
+        const sTime = parseInt((event.startTime - ZERO_time) / 1000);
+        const eTime =
+          parseInt((event.endTime - event.startTime) / 1000) + sTime;
         const FFMPEGcommand = `-i ${srcVideoPath} -vf trim=${sTime}:${eTime} ${eventVideoPath}`;
         console.log(`trimming video and saving it to ${eventVideoPath}`);
         console.log(`executing FFMPEG command: ${FFMPEGcommand}`);
@@ -203,7 +226,7 @@ function handleEvent(allEvents, videoStat, event, setWorkStatus, tokenIDs) {
         }
       } catch (e) {
         setWorkStatus("error uploading video");
-        const eStr = e.hasOwnProperty("message") ? e.message : e;
+        const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading video: ${eStr}`;
         console.log(m);
         await updateAsyncStorage(allEvents, event);
@@ -306,7 +329,10 @@ function handleEvent(allEvents, videoStat, event, setWorkStatus, tokenIDs) {
         }
       } catch (e) {
         setWorkStatus("error uploading thumbnail");
-        const eStr = e.hasOwnProperty("message") ? e.message : e;
+        console.log(
+          "error uploading thumbnail stringified " + JSON.stringify(e)
+        );
+        const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading thumbnail: ${eStr}`;
         console.log(m);
         await updateAsyncStorage(allEvents, event);
@@ -429,7 +455,7 @@ function handleEvent(allEvents, videoStat, event, setWorkStatus, tokenIDs) {
         }
       } catch (e) {
         setWorkStatus("error uploading telemetry");
-        const eStr = e.hasOwnProperty("message") ? e.message : e;
+        const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading telemetry: ${eStr}`;
         console.log(m);
         await updateAsyncStorage(allEvents, event);

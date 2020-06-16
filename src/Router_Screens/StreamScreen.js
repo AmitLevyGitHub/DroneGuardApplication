@@ -53,6 +53,8 @@ const StreamScreen = (props) => {
     droneHeightCM: gpsTele.altitude,
     droneBearing: gpsTele.bearing,
   });
+  //user events
+  const [eventStartTime, setEventStartTime] = React.useState(-1);
   /**
    * StreamScreen cleanup
    * on exit mark in async storage so user must upload data before using again
@@ -215,6 +217,40 @@ const StreamScreen = (props) => {
           onPress={() => setNavCommand("emergency")}
         >
           <Text style={{ color: "#fff" }}>E</Text>
+        </TouchableOpacity>
+        {/** custom event */}
+        <TouchableOpacity
+          style={{
+            width: 100,
+            height: 30,
+            borderRadius: 50,
+            borderStyle: "solid",
+            borderColor: "#fff",
+            borderWidth: 1,
+            // marginRight: 10,
+            position: "absolute",
+            right: 135,
+            top: 9,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => {
+            if (eventStartTime === -1) {
+              setEventStartTime(Date.now());
+            } else {
+              props.setUserEvents(
+                props.userEvents.concat({
+                  startTime: eventStartTime,
+                  endTime: Date.now(),
+                })
+              );
+              setEventStartTime(-1);
+            }
+          }}
+        >
+          <Text style={{ color: "#fff" }}>
+            {eventStartTime === -1 ? "Start Event" : "Stop Event"}
+          </Text>
         </TouchableOpacity>
         {/** user image */}
         <Image
@@ -397,5 +433,7 @@ const styles = StyleSheet.create({
 
 StreamScreen.propTypes = {
   setScreen: PropTypes.func.isRequired,
+  setUserEvents: PropTypes.func.isRequired,
+  userEvents: PropTypes.array,
 };
 export default StreamScreen;

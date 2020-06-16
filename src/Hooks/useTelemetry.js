@@ -1,6 +1,6 @@
 import React from "react";
 import RNFS from "react-native-fs";
-import { FN, navConsts, shouldSave } from "../Assets/consts";
+import { FN, shouldSave } from "../Assets/consts";
 export default function useTelemetry(socket, hasStarted) {
   //tele
   const [droneTele, setDroneTele] = React.useState({
@@ -99,40 +99,10 @@ export default function useTelemetry(socket, hasStarted) {
             console.log(err.message);
           });
       })();
-      /**
-       * check isEmergency and save to events file
-       */
-      (async () => {
-        if (!save) return;
-        if (
-          startTime.current === -1 &&
-          telemetryToSave.height <= navConsts.emergencyHeight
-        ) {
-          startTime.current = telemetryToSave.time;
-          console.log(`emergency event starting now: ${telemetryToSave.time}`);
-        }
-        if (
-          startTime.current > -1 &&
-          telemetryToSave.height > navConsts.emergencyHeight
-        ) {
-          console.log(`emergency event ends now: ${telemetryToSave.time}`);
-          const path = RNFS.ExternalDirectoryPath + "/" + FN.events;
-          const stringifiedEvent = JSON.stringify({
-            startTime: startTime.current,
-            endTime: telemetryToSave.time,
-          });
-          RNFS.appendFile(path, stringifiedEvent + ",")
-            .then(() => {
-              console.log(`emergency event saved to file!`);
-            })
-            .catch((err) => {
-              console.log(err.message);
-            });
-          startTime.current = -1;
-          eventsCounter.current++;
-        }
-      })();
     });
+    return function cleanup() {
+      socket.off("allTelemetry");
+    };
   }, [socket, hasStarted]);
   return [droneTele, gpsTele];
 }
