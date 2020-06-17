@@ -23,6 +23,8 @@ import useTelemetry from "../Hooks/useTelemetry";
 import useSaveStream from "../Hooks/useSaveStream";
 import useScaleStream from "../Hooks/useScaleStream";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
+import logger from "../logger";
+const caller = "StreamScreen.js";
 //
 const StreamScreen = (props) => {
   const streamWidth = 1920;
@@ -32,7 +34,7 @@ const StreamScreen = (props) => {
   //start stream & telemetry
   const [hasStarted, setHasStarted] = React.useState(false);
   const [droneTele, gpsTele] = useTelemetry(socket, hasStarted);
-  const [errorOccurred] = useSaveStream(socket, hasStarted);
+  useSaveStream(socket, hasStarted);
   const [scaledWidth, scaledHeight] = useScaleStream(streamWidth, streamHeight);
   const [myRef, setMyRef] = React.useState(null);
   //navigation handler
@@ -66,8 +68,13 @@ const StreamScreen = (props) => {
         await AsyncStorage.setItem(AS.uploadStatus, JSON.stringify([1]));
       } catch (e) {
         // saving error
-        const m = `error setting ${AS.uploadStatus} to true! Stream UI will not be blocked\n${e.message}`;
-        console.log(m);
+        const eStr = e.hasOwnProperty("message") ? e.message : e;
+        logger(
+          "ERROR",
+          m,
+          caller,
+          `AsyncStorage.setItem(${AS.uploadStatus}, )`
+        );
       }
     };
   }, []);
@@ -100,6 +107,7 @@ const StreamScreen = (props) => {
           const axisY_res = (e.nativeEvent.locationY - scaledHeight / 2) * -1;
           setAxisX(axisX_res);
           setAxisY(axisY_res);
+          logger("OPERATION", "press", caller);
         }}
       >
         <NodePlayerView
@@ -194,7 +202,10 @@ const StreamScreen = (props) => {
             justifyContent: "center",
             alignItems: "center",
           }}
-          onPress={() => setNavCommand("command")}
+          onPress={() => {
+            setNavCommand("command");
+            logger("OPERATION", "command", caller);
+          }}
         >
           <Text style={{ color: "#fff" }}>C</Text>
         </TouchableOpacity>
@@ -214,7 +225,10 @@ const StreamScreen = (props) => {
             justifyContent: "center",
             alignItems: "center",
           }}
-          onPress={() => setNavCommand("emergency")}
+          onPress={() => {
+            setNavCommand("emergency");
+            logger("OPERATION", "emergency", caller);
+          }}
         >
           <Text style={{ color: "#fff" }}>E</Text>
         </TouchableOpacity>
@@ -237,6 +251,7 @@ const StreamScreen = (props) => {
           onPress={() => {
             if (eventStartTime === -1) {
               setEventStartTime(Date.now());
+              logger("DEV", "user starts event", caller);
             } else {
               props.setUserEvents(
                 props.userEvents.concat({
@@ -245,6 +260,7 @@ const StreamScreen = (props) => {
                 })
               );
               setEventStartTime(-1);
+              logger("DEV", "user ends event", caller);
             }
           }}
         >
@@ -271,9 +287,11 @@ const StreamScreen = (props) => {
           if (droneOption === "takeoff") {
             setNavCommand("takeoff");
             setDroneOption("land");
+            logger("OPERATION", "takeoff", caller);
           } else {
             setNavCommand("land");
             setDroneOption("takeoff");
+            logger("OPERATION", "land", caller);
           }
         }}
       >

@@ -9,6 +9,8 @@ import StreamScreen from "./StreamScreen";
 import AsyncStorage from "@react-native-community/async-storage";
 global.Buffer = global.Buffer || require("buffer").Buffer;
 import { forceUpload } from "../Assets/consts";
+import logger from "../logger";
+const caller = "Router.js";
 //
 const Router = () => {
   const [screen, setScreen] = React.useState("load");
@@ -22,7 +24,7 @@ const Router = () => {
         userToken = await AsyncStorage.getItem(AS.userToken);
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR getting ${AS.userToken} from async storage!\n${m}`);
+        logger("ERROR", m, caller, `AsyncStorage.getItem(${AS.userToken})`);
       }
       //
       //check if beach chosen
@@ -31,7 +33,7 @@ const Router = () => {
         beachId = await AsyncStorage.getItem(AS.beachId);
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR getting ${AS.beachId} from async storage!\n${m}`);
+        logger("ERROR", m, caller, `AsyncStorage.getItem(${AS.beachId})`);
       }
       //
       //check upload status
@@ -46,9 +48,7 @@ const Router = () => {
         }
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(
-          `ERROR getting ${AS.uploadStatus} from async storage!\n${m}`
-        );
+        logger("ERROR", m, caller, `AsyncStorage.getItem(${AS.uploadStatus})`);
       }
       //
       //navigate

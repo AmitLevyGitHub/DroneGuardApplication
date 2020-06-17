@@ -1,7 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
-
+import logger from "../logger";
+const caller = "JoystickLeft.js";
 const JoystickLeft = (props) => {
   const { setNavCommand } = props;
   return (
@@ -10,7 +11,10 @@ const JoystickLeft = (props) => {
         <TouchableOpacity
           title=""
           style={[styles.btn, styles.btnUp]}
-          onPress={() => setNavCommand("forward")}
+          onPress={() => {
+            setNavCommand("forward");
+            logger("OPERATION", "forward", caller);
+          }}
         />
       </View>
       <View style={styles.btnLeftRightContainer}>
@@ -18,14 +22,20 @@ const JoystickLeft = (props) => {
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnLeft]}
-            onPress={() => setNavCommand("left")}
+            onPress={() => {
+              setNavCommand("left");
+              logger("OPERATION", "left", caller);
+            }}
           />
         </View>
         <View style={styles.btnRightContainer}>
           <TouchableOpacity
             title=""
             style={[styles.btn, styles.btnRight]}
-            onPress={() => setNavCommand("right")}
+            onPress={() => {
+              setNavCommand("right");
+              logger("OPERATION", "right", caller);
+            }}
           />
         </View>
       </View>
@@ -34,7 +44,10 @@ const JoystickLeft = (props) => {
         <TouchableOpacity
           title=""
           style={[styles.btn, styles.btnDown]}
-          onPress={() => setNavCommand("back")}
+          onPress={() => {
+            setNavCommand("back");
+            logger("OPERATION", "back", caller);
+          }}
         />
       </View>
       {/* </View> */}
@@ -51,10 +64,10 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     borderRadius: 300,
     justifyContent: "space-between",
-    position: 'absolute',
+    position: "absolute",
     left: 20,
     bottom: 5,
-    zIndex: 999
+    zIndex: 999,
   },
   btn: {
     width: 0,

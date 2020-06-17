@@ -1,13 +1,15 @@
 import React from "react";
 import socketIOClient from "socket.io-client";
 import { telemetryDevice } from "../Assets/consts";
+import logger from "../logger";
+const caller = "useSocket.js";
 //
 export default function useSocket() {
   const [socket, setSocket] = React.useState(null);
   React.useEffect(() => {
     const socketServerURL = `http://${telemetryDevice.ip}:3000`;
     //connection
-    console.log(`will create socket to ${socketServerURL}`);
+    logger("DEV", `creating socket to ${socketServerURL}`, caller);
     tSocket = socketIOClient(socketServerURL);
     setSocket(tSocket);
     //emit hello / securing connection

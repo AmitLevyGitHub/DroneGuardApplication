@@ -1,21 +1,28 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
-
-const JoystickRight = props => {
+import logger from "../logger";
+const caller = "JoystickRight.js";
+const JoystickRight = (props) => {
   const { setNavCommand } = props;
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.btnContainer}
-        onPress={() => setNavCommand("up")}
+        onPress={() => {
+          setNavCommand("up");
+          logger("OPERATION", "up", caller);
+        }}
       >
         <View style={[styles.btn, styles.btnUp]} />
         <View style={[styles.btnLittle, styles.btnUpLittle]} />
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.btnContainer, styles.btnUpContainer]}
-        onPress={() => setNavCommand("down")}
+        onPress={() => {
+          setNavCommand("down");
+          logger("OPERATION", "down", caller);
+        }}
       >
         <View style={[styles.btnLittle, styles.btnDownLittle]} />
         <View style={[styles.btn, styles.btnDown]} />
@@ -36,12 +43,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     bottom: 5,
-    zIndex: 999
+    zIndex: 999,
   },
   btn: {
     width: 20,
     height: 20,
-    borderStyle: "solid"
+    borderStyle: "solid",
   },
   // spinBtn: {
   //     width: 30,
@@ -51,13 +58,13 @@ const styles = StyleSheet.create({
   btnContainer: {
     width: "100%",
     height: "50%",
-    justifyContent: "center"
+    justifyContent: "center",
     //backgroundColor: "blue"
   },
   btnDownContainer: {
     justifyContent: "center",
     alignItems: "flex-end",
-    transform: [{ rotate: "180deg" }]
+    transform: [{ rotate: "180deg" }],
     //backgroundColor: "red"
   },
   btnUp: {
@@ -73,7 +80,7 @@ const styles = StyleSheet.create({
     //marginTop: 15,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "-135deg" }]
+    transform: [{ rotate: "-135deg" }],
   },
   btnDown: {
     // backgroundColor: "blue",
@@ -88,12 +95,12 @@ const styles = StyleSheet.create({
     //marginTop: 15,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "45deg" }]
+    transform: [{ rotate: "45deg" }],
   },
   btnLittle: {
     width: 15,
     height: 15,
-    borderStyle: "solid"
+    borderStyle: "solid",
   },
   btnUpLittle: {
     borderTopWidth: 0,
@@ -107,7 +114,7 @@ const styles = StyleSheet.create({
     marginTop: -12,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "-135deg" }]
+    transform: [{ rotate: "-135deg" }],
   },
   btnDownLittle: {
     borderTopWidth: 0,
@@ -121,10 +128,10 @@ const styles = StyleSheet.create({
     marginBottom: -12,
     marginLeft: "auto",
     marginRight: "auto",
-    transform: [{ rotate: "45deg" }]
-  }
+    transform: [{ rotate: "45deg" }],
+  },
 });
 JoystickRight.propTypes = {
-  setNavCommand: PropTypes.func.isRequired
+  setNavCommand: PropTypes.func.isRequired,
 };
 export default JoystickRight;

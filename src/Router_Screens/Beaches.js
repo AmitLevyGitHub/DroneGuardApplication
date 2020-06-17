@@ -12,7 +12,9 @@ import {
 import { Provider, Modal } from "@ant-design/react-native";
 import { AS, S } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
-
+import logger from "../logger";
+const caller = "Beaches.js";
+//
 const BeachesScreen = (props) => {
   const [beaches, setBaches] = React.useState([]);
   const [isFail, setIsFail] = React.useState(false);
@@ -29,7 +31,7 @@ const BeachesScreen = (props) => {
       } catch (e) {
         fail = true;
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR reading ${AS.userToken} from async storage!\n${m}`);
+        logger("WARNING", m, caller, `AsyncStorage.getItem(${AS.userToken})`);
         setStorageMsg(m);
       }
       if (fail) {
@@ -51,11 +53,15 @@ const BeachesScreen = (props) => {
         );
         if (response.status === 200) {
           const beachesResponse = await response.json();
-          console.log(`number of beaches returned = ${beachesResponse.length}`);
+          logger(
+            "DEV",
+            `number of beaches returned = ${beachesResponse.length}`,
+            caller
+          );
           setBaches(beachesResponse);
         } else {
           const beachesResponseText = await response.text();
-          console.log(`beaches fetch failed with status = ${response.status}`);
+          logger("WARNING", response.status, caller, "/beaches");
           fail = true;
           setFetchMsg(
             beachesResponseText.includes("<")
@@ -66,7 +72,7 @@ const BeachesScreen = (props) => {
       } catch (e) {
         console.log(e);
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`beaches fetch failed with error = ${m}`);
+        logger("WARNING", response.status, caller, "/beaches");
         fail = true;
         setFetchMsg(m);
       }
@@ -124,15 +130,18 @@ const BeachesScreen = (props) => {
             <TouchableOpacity
               onPress={async () => {
                 try {
-                  console.log(`chosen beach = ${beach.name}`);
+                  logger("DUMMY", `chosen beach = ${beach.name}`, caller);
                   await AsyncStorage.setItem(AS.beachId, beach._id);
                   props.setScreen(S.home);
                 } catch (e) {
                   const m = e.hasOwnProperty("message")
                     ? e.message
                     : e.toString();
-                  console.log(
-                    `ERROR setting ${AS.beachId} in async storage!\n${m}`
+                  logger(
+                    "ERROR",
+                    m,
+                    caller,
+                    `AsyncStorage.setItem(${AS.beachId}, )`
                   );
                   setIsFail(true);
                   setStorageMsg(m);

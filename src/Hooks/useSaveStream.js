@@ -1,13 +1,14 @@
 /**
- * NEED TO HANDLE ERRORS AND DISCONNECTIONS!
+ * ??NEED TO HANDLE ERRORS AND DISCONNECTIONS??
  */
 import React from "react";
 import { RNFFmpeg } from "react-native-ffmpeg";
 import RNFS from "react-native-fs";
 import { FN, streamingDevice, shouldSave } from "../Assets/consts";
+import logger from "../logger";
+const caller = "useSaveStream.js";
 //
 export default function useSaveStream(socket, hasStarted) {
-  const [errorOccurred, setErrorOccurred] = React.useState(false);
   const shouldExecute = React.useRef(false);
   //
   React.useEffect(() => {
@@ -33,23 +34,22 @@ export default function useSaveStream(socket, hasStarted) {
         const FFMPEGcommand = `-i ${streamingDevice.url} -b:v 1000000 -c:v copy -r 60 -y ${videoPath}`;
         // const FFMPEGcommand = `-i ${streamingDevice.url} -b:v 1000000 -c:v copy -r 60 -y ${videoPath}`;
         // const FFMPEGcommand = `-i ${streamingDevice.url} -c:v copy ${videoPath}`;
-        console.log(`saving video to ${videoPath}`);
         shouldExecute.current = true;
-        const videoStartTime = Date.now();
+        logger("DEV", FFMPEGcommand, caller, "RNFFmpeg.execute()");
         const result = await RNFFmpeg.execute(FFMPEGcommand);
-        console.log("\n-\n-\n-\nFFmpeg process exited with rc " + result.rc);
-      } catch (error) {
-        console.log("\n\n\n\n\nFFMPEG execute error!");
-        console.log(error.hasOwnProperty("message") ? error.message : error);
+        logger("DEV", "success: " + result.rc, caller, "RNFFmpeg.execute()");
+      } catch (e) {
+        const m = e.hasOwnProperty("message") ? e.message : e;
+        logger("DEV", "error: " + m, caller, "RNFFmpeg.execute()");
       }
     })();
     //
     return function cleanup() {
       if (!shouldExecute.current) return;
-      console.log("\n\n\n\n\nCalling RNFFmpeg.cancel()");
+      logger("DUMMY", "canceling save stream", caller, "RNFFmpeg.cancel()");
       RNFFmpeg.cancel();
     };
   }, [socket]);
   //
-  return [errorOccurred];
+  return;
 }

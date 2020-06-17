@@ -12,7 +12,9 @@ import {
 import { Provider, Modal } from "@ant-design/react-native";
 import { AS, S } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
-
+import logger from "../logger";
+const caller = "LogIn.js";
+//
 const LogInScreen = (props) => {
   const [username, setUsername] = React.useState(null);
   const [password, setPassword] = React.useState(null);
@@ -44,14 +46,14 @@ const LogInScreen = (props) => {
       );
       if (response.status === 200) {
         const loginResponse = await response.json();
-        console.log(`token = ${loginResponse.token}`);
+        logger("DUMMY", `token = ${loginResponse.token}`, caller, "/login");
         tokenTmp = loginResponse.token;
         idTmp = loginResponse.user._id;
         setToken(tokenTmp);
         setFetchMsg(loginResponse.msg);
       } else {
         const loginResponseText = await response.text();
-        console.log(`login failed with status = ${response.status}`);
+        logger("DEV", response.status, caller, "/login");
         fail = true;
         setFetchMsg(
           loginResponseText.includes("<") ? "unknown error" : loginResponseText
@@ -60,7 +62,7 @@ const LogInScreen = (props) => {
     } catch (e) {
       console.log(e);
       const m = e.hasOwnProperty("message") ? e.message : e;
-      console.log(`login failed with error = ${m}`);
+      logger("DEV", m, caller, "/login");
       fail = true;
       setFetchMsg(m);
     }
@@ -74,7 +76,7 @@ const LogInScreen = (props) => {
       await AsyncStorage.setItem(AS.lifeGuardId, idTmp);
     } catch (e) {
       const m = e.hasOwnProperty("message") ? e.message : e.toString();
-      console.log(`ERROR setting in async storage!\n${m}`);
+      logger("WARNING", m, caller, "AsyncStorage.setItem()");
       fail = true;
       setStorageMsg(m);
     }

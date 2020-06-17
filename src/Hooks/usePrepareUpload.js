@@ -3,6 +3,8 @@ import AsyncStorage from "@react-native-community/async-storage";
 import RNFS from "react-native-fs";
 import { RNFFprobe } from "react-native-ffmpeg";
 import { AS, FN, navConsts } from "../Assets/consts";
+import logger from "../logger";
+const caller = "usePrepareUpload.js";
 export default function usePrepareUpload(requirePrepare, userEvents) {
   const [isPreparing, setPreparing] = React.useState(true);
   const [prepError, setPrepError] = React.useState(null);
@@ -11,7 +13,6 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
   const [tokenIDs, setTokenIDs] = React.useState(null);
   const [firstTeleTime, setFirstTeleTime] = React.useState(0);
   React.useEffect(() => {
-    console.log("preparing");
     let isSubscribed = true;
     (async () => {
       setPreparing(true);
@@ -23,7 +24,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         token = await AsyncStorage.getItem(AS.userToken);
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR reading ${AS.userToken} from async storage!\n${m}`);
+        logger("WARNING", m, caller, `AsyncStorage.getItem(${AS.userToken})`);
         setPrepError(m);
       }
       let lifeGuardId = null;
@@ -31,9 +32,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         lifeGuardId = await AsyncStorage.getItem(AS.lifeGuardId);
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(
-          `ERROR reading ${AS.lifeGuardId} from async storage!\n${m}`
-        );
+        logger("WARNING", m, caller, `AsyncStorage.getItem(${AS.lifeGuardId})`);
         setPrepError(m);
       }
       let beachId = null;
@@ -41,7 +40,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         beachId = await AsyncStorage.getItem(AS.beachId);
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR reading ${AS.beachId} from async storage!\n${m}`);
+        logger("WARNING", m, caller, `AsyncStorage.getItem(${AS.beachId})`);
         setPrepError(m);
       }
       setTokenIDs({
@@ -61,18 +60,20 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         vidStartTime = new Date(stat.ctime).getTime();
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR reading file ${FN.video}: ${m}`);
+        logger("WARNING", m, caller, `RNFS.stat(${videoPath})`);
         setPrepError(m);
       }
       try {
         const vidInfo = await RNFFprobe.getMediaInformation(videoPath);
         vidDuration = vidInfo.duration;
-        console.log(`duration = ${vidDuration}`);
         vidStartTimeInFile = vidInfo.startTime;
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(
-          `error executing RNFFprobe.getMediaInformation for file ${FN.video}\n${m}`
+        logger(
+          "WARNING",
+          m,
+          caller,
+          `RNFFprobe.getMediaInformation(${videoPath})`
         );
         setPrepError(m);
       }
@@ -95,10 +96,10 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         telemetryRead = "[" + telemetryRead + "]";
         ALL_telemetry = JSON.parse(telemetryRead);
         setFirstTeleTime(ALL_telemetry[0].time);
-        console.log(`first tele time = ${ALL_telemetry[0].time}`);
+        logger("DUMMY", `first tele time = ${ALL_telemetry[0].time}`, caller);
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR reading file ${FN.telemetry}\n${m}`);
+        logger("WARNING", m, caller, `RNFS.readFile(${FN.telemetry})`);
         setPrepError(m);
       }
       /**
@@ -111,23 +112,25 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         if (stringValue) uploadStatus = JSON.parse(stringValue);
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(
-          `ERROR reading ${AS.uploadStatus} from async storage!\n${m}`
+        logger(
+          "WARNING",
+          m,
+          caller,
+          `AsyncStorage.getItem(${AS.uploadStatus})`
         );
         setPrepError(m);
       }
       //
       //if not first time visiting upload screen return
       if (uploadStatus.length > 0 && uploadStatus[0] !== 1) {
-        console.log("using emergency events from local storage");
+        logger("DUMMY", "using emergency events from local storage", caller);
         setEventsStatus(uploadStatus);
-        // console.log(JSON.stringify(uploadStatus, null, 2))
         isSubscribed && setPreparing(false);
         return;
       }
       //
       //if first time visiting upload screen create list from all telemetry file
-      console.log("creating emergency events list from file");
+      logger("DUMMY", "creating emergency events list from file", caller);
       const { emergencyHeight } = navConsts;
       let didTakeoff = false;
       let eventStartTime = -1;
@@ -141,10 +144,18 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         } else {
           if (eventStartTime === -1 && currTele.height <= emergencyHeight) {
             eventStartTime = currTele.time;
-            console.log(`emergency event start detected: ${eventStartTime}`);
+            logger(
+              "DUMMY",
+              `emergency event start detected: ${eventStartTime}`,
+              caller
+            );
           }
           if (eventStartTime > -1 && currTele.height > emergencyHeight) {
-            console.log(`emergency events end detected: ${currTele.time}`);
+            logger(
+              "DUMMY",
+              `emergency events end detected: ${currTele.time}`,
+              caller
+            );
             emergencyEventsDetected.push({
               startTime: eventStartTime,
               endTime: currTele.time,
@@ -194,7 +205,12 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         await AsyncStorage.setItem(AS.uploadStatus, JSON.stringify(t));
       } catch (e) {
         const m = e.hasOwnProperty("message") ? e.message : e;
-        console.log(`ERROR setting ${AS.uploadStatus} in async storage!\n${m}`);
+        logger(
+          "WARNING",
+          m,
+          caller,
+          `AsyncStorage.setItem(${AS.uploadStatus}, )`
+        );
         setPrepError(m);
       }
       //

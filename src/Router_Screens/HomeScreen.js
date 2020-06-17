@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { S, AS, isUploadDisabled, forceUpload } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
+import logger from "../logger";
+const caller = "HomeScreen.js";
 //
 const HomeScreen = (props) => {
   return (
@@ -43,10 +45,11 @@ const HomeScreen = (props) => {
             style={{ width: 490 / 10, height: 367 / 10 }}
           />
         </TouchableWithoutFeedback>
-        {/** life guard image avatar */}
+        {/** logout button */}
         <TouchableWithoutFeedback
           onPress={() => {
             AsyncStorage.clear();
+            logger("DEV", "user logged out", caller);
             props.setScreen(S.login);
           }}
           style={{ zIndex: 100 }}
@@ -92,7 +95,7 @@ const HomeScreen = (props) => {
 
           <TouchableOpacity
             style={styles.textWrapper}
-            onPress={async () => props.setScreen(S.upload)}
+            onPress={() => props.setScreen(S.upload)}
           >
             <Text style={styles.text}>UPLOAD</Text>
           </TouchableOpacity>

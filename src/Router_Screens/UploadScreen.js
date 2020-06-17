@@ -20,6 +20,8 @@ import { S, forceUpload, AS } from "../Assets/consts";
 //
 import usePrepareUpload from "../Hooks/usePrepareUpload";
 import useUploadEvents from "../Hooks/useUploadEvents";
+import logger from "../logger";
+const caller = "UploadScreen.js";
 //
 const UploadScreen = (props) => {
   const [requirePrepare, setRequirePrepare] = React.useState(true);
@@ -51,15 +53,27 @@ const UploadScreen = (props) => {
   //
   const [showExitModal, setExitModal] = React.useState(false);
   const deleteThenExit = () => {
+    logger("DEV", "deleteThenExit", caller);
     RNFFmpeg.cancel();
     AsyncStorage.removeItem(AS.uploadStatus);
     props.setUserEvents([]);
     RNFS.unlink(RNFS.ExternalDirectoryPath)
       .then(() => {
-        console.log("files folder deleted");
+        logger(
+          "DEV",
+          "files folder deleted",
+          caller,
+          `RNFS.unlink(${RNFS.ExternalDirectoryPath})`
+        );
       })
-      .catch((err) => {
-        console.log(err.message);
+      .catch((e) => {
+        const eStr = e.hasOwnProperty("message") ? e.message : e;
+        logger(
+          "ERROR",
+          eStr,
+          caller,
+          `RNFS.unlink(${RNFS.ExternalDirectoryPath})`
+        );
       });
     props.setScreen(S.home);
   };
@@ -112,6 +126,7 @@ const UploadScreen = (props) => {
               style={{ width: 490 / 10, height: 367 / 10 }}
             />
           </TouchableWithoutFeedback>
+          {/** temp button */}
           <TouchableOpacity
             onPress={async () => {
               await AsyncStorage.removeItem(AS.uploadStatus);
@@ -209,7 +224,6 @@ const UploadScreen = (props) => {
                     alignSelf: "center",
                   }}
                   onPress={() => {
-                    console.log("setting handleEvent to true");
                     setHandleEvents(true);
                   }}
                 >

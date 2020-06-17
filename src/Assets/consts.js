@@ -5,6 +5,9 @@ export const shouldSave = {
   tele: true,
   video: true,
 };
+/**
+ * upload screen
+ */
 export const isUploadDisabled = true;
 export const forceUpload = false;
 /**
@@ -52,10 +55,10 @@ export const FN = {
   video: `streamVideo.${videoFormat}`,
   telemetry: "allTelemetry.txt",
   logger: "logger.txt",
-  appErrors: "appErrors.txt",
   eventPrefix: "event",
   //
   events: "emergencyEvents.txt",
+  appErrors: "appErrors.txt",
 };
 /**
  * async storage keys

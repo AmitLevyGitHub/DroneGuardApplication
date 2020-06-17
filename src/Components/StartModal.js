@@ -9,7 +9,9 @@ import {
   Button,
   StyleSheet,
 } from "react-native";
+import logger from "../logger";
 //
+const caller = "StartModal.js";
 const closableWaitTime = 3000;
 const autoCloseTimeWhenFinished = 15000;
 const errorTimeOut = 20000;
@@ -32,31 +34,31 @@ const StartModal = (props) => {
    * auto close modal after specific time (must be done with explicit state change)
    */
   React.useEffect(() => {
-    if (!socket) return; // if (!socket.connected) return;
+    if (!socket) return;
     let isSubscribed = true;
     let autoCloseTimeout = null;
     socket.on("startFinished", (startData) => {
-      const startDataStringified = JSON.stringify(startData, null, 2);
-      console.log(`startFinished with startData = ${startDataStringified}`);
       setIsStartWorking(false);
       setClosable(true);
       if (startData.status) {
+        logger("DEV", startData.message, caller, "socket.on(startFinished)");
         setStartModalTitle("Startup finished");
         setStartButtonTitle("Continue");
         setStartStatus(startData.message);
         setHasStarted(true);
+        //auto close
+        autoCloseTimeout = setTimeout(() => {
+          isSubscribed && setStartModalVisible(false);
+        }, autoCloseTimeWhenFinished);
       } else {
+        logger("ERROR", startData.message, caller, "socket.on(startFinished)");
         setStartModalTitle("Startup error");
         setStartButtonTitle("Start Again");
         setStartStatus(
-          startData.message + "\nPlease try again and do not exit this popup"
+          `${startData.message}\nPlease try again and do not exit this popup`
         );
         setRequestStart(false);
       }
-      //auto close
-      autoCloseTimeout = setTimeout(() => {
-        isSubscribed && setStartModalVisible(false);
-      }, autoCloseTimeWhenFinished);
     });
     return function cleanup() {
       isSubscribed = false;
@@ -72,6 +74,12 @@ const StartModal = (props) => {
   React.useEffect(() => {
     if (!requestStart) return;
     if (!socket.connected) {
+      logger(
+        "WARNING",
+        "trying to emit but socket not connected",
+        caller,
+        "socket.emit(start)"
+      );
       setStartModalTitle("No Connection");
       setStartStatus(
         "Socket to server not opened\nPlease try again and do not exit this popup\nIf you exit this popup without connection the app won't be responsive"
@@ -86,13 +94,20 @@ const StartModal = (props) => {
     setIsStartWorking(true);
     setStartStatus(null);
     socket.emit("start");
+    logger("DEV", "socket.emit(start)", caller);
     //
     const timeOutTimeout = setTimeout(() => {
       if (isSubscribed) {
+        const errorTimeOutSeconds = (errorTimeOut / 1000).toFixed(0);
+        logger(
+          "WARNING",
+          `timeout after ${errorTimeOutSeconds}, no response received`,
+          caller,
+          "socket.emit(start)"
+        );
         setClosable(true);
         setIsStartWorking(false);
         setStartModalTitle("Startup Timeout");
-        const errorTimeOutSeconds = (errorTimeOut / 1000).toFixed(0);
         setStartButtonTitle("Start Again");
         setStartStatus(
           `No response received from server after ${errorTimeOutSeconds}`

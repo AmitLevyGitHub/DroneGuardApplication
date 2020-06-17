@@ -1,6 +1,8 @@
 import React from "react";
 import RNFS from "react-native-fs";
 import { FN, shouldSave } from "../Assets/consts";
+import logger from "../logger";
+const caller = "useTelemetry.js";
 export default function useTelemetry(socket, hasStarted) {
   //tele
   const [droneTele, setDroneTele] = React.useState({
@@ -14,21 +16,14 @@ export default function useTelemetry(socket, hasStarted) {
     bearing: -1.0,
   });
   //emergency events detection
-  const eventsCounter = React.useRef(1);
   const startTime = React.useRef(-1);
   //
   //
   React.useEffect(() => {
     const save = shouldSave.tele;
     if (!hasStarted && !socket) return;
-    // if (!socket.connected) return;
     socket.on("allTelemetry", (receivedTele) => {
-      console.log(
-        "on allTelemetry, height " +
-          receivedTele.height +
-          " startTime.current = " +
-          startTime.current
-      );
+      logger("DEV", "telemetry received", caller, "socket.on(allTelemetry)");
       // console.log(`data received with altitude = ${M.altitude}`);
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);
@@ -95,8 +90,9 @@ export default function useTelemetry(socket, hasStarted) {
           .then(() => {
             //
           })
-          .catch((err) => {
-            console.log(err.message);
+          .catch((e) => {
+            const m = e.hasOwnProperty("message") ? e.message : e;
+            console.log(m);
           });
       })();
     });

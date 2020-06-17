@@ -5,8 +5,10 @@ import { RNFFmpeg } from "react-native-ffmpeg";
 import { RNS3 } from "react-native-aws3";
 import { AWSkeys } from "../Assets/secrets";
 import { AS, FN } from "../Assets/consts";
+import logger from "../logger";
 // const thumbnailPos = "00:00:03";
 const thumbnailPos = "00:00:00";
+const caller = "useUploadEvents.js";
 //
 export default function useUploadEvents(
   isPreparing,
@@ -27,16 +29,22 @@ export default function useUploadEvents(
       let isError = false;
       for (let i = 0; i < eventsStatus.length; i++) {
         const event = eventsStatus[i];
-        console.log(
-          `handling emergency event number: ${i + 1} with start time = ${
-            event.startTime
-          }`
-        );
         setCurrentEvent(event);
         if (event.status === "failed") {
-          console.log(`event number ${i + 1} failed before, skipping`);
+          logger(
+            "DEV",
+            `event number ${i + 1} failed before, skipping`,
+            caller
+          );
           continue;
         }
+        logger(
+          "DEV",
+          `handling emergency event number: ${i + 1} with start time = ${
+            event.startTime
+          }`,
+          caller
+        );
         //
         try {
           event.status = "working";
@@ -49,6 +57,12 @@ export default function useUploadEvents(
             firstTeleTime
           );
           event.status = "done";
+          logger(
+            "DEV",
+            `finished handling emergency event number: ${i +
+              1} with start time = ${event.startTime}`,
+            caller
+          );
         } catch (error) {
           isError = true;
           event.status = "failed";
@@ -57,19 +71,21 @@ export default function useUploadEvents(
           }));
           newFailedEvents.push({ index: event.index, status: error });
           setFailedEvents(newFailedEvents);
+          logger(
+            "ERROR",
+            `finished handling emergency event number: ${i +
+              1} with start time = ${event.startTime}`,
+            caller
+          );
           //show message for few more seconds?
         }
-        console.log(
-          `finished handling emergency event number: ${i +
-            1} with start time = ${event.startTime}`
-        );
       }
       //
       if (!isError) {
-        console.log("finished handling all events without errors");
+        logger("DEV", "finished handling all events without errors", caller);
         setLoopFinished(true);
       } else {
-        console.log("finished handling all events with errors");
+        logger("ERROR", "finished handling all events with errors", caller);
         setLoopFinished(true);
       }
     })();
@@ -99,17 +115,17 @@ function handleEvent(
   firstTeleTime
 ) {
   return new Promise(async (resolve, reject) => {
-    // const beachId = "5ea2d21477f48e08a8e19e4e";
-    // const lifeGuardId = "5ed6239e9f40dd001719c3ec";
+    let step = null;
     const beachId = tokenIDs.beachId;
     const lifeGuardId = tokenIDs.lifeGuardId;
     const token = tokenIDs.token;
     // const ZERO_time = videoStat.startTime;
     const ZERO_time = firstTeleTime;
     /**
-     * create folder on device
+     * 0.0 create folder on device
      */
     if (!event.directoryPath) {
+      step = "createDirectory";
       setWorkStatus("creating directory on device");
       const dirName = `${FN.eventPrefix}_s_${event.startTime}`;
       const dirPath = `${RNFS.ExternalDirectoryPath}/${dirName}`;
@@ -117,20 +133,22 @@ function handleEvent(
         await RNFS.mkdir(dirPath);
         event.directoryPath = dirPath;
         event.directoryName = dirName;
+        logger("DEV", dirPath, caller, step);
       } catch (e) {
         setWorkStatus("error creating directory on device");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error creating directory on device: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * create event in DB
+     * 1.0 create event in DB
      */
     if (!event.ID) {
+      step = "createEventInDB";
       setWorkStatus("creating event in database");
       try {
         let response = await fetch(
@@ -152,10 +170,8 @@ function handleEvent(
         );
         if (response.status === 200) {
           const addEventResponse = await response.json();
-          console.log(
-            `event created in database with ID = ${addEventResponse._id}`
-          );
           event.ID = addEventResponse._id;
+          logger("DEV", addEventResponse._id, caller, step);
         } else {
           throw new Error(`status code = ${response.status}`);
         }
@@ -163,16 +179,17 @@ function handleEvent(
         setWorkStatus("error creating event in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error creating event in database: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * trim video
+     * 2.0 trim video
      */
     if (!event.video.fullPath) {
+      step = "trimVideo";
       try {
         setWorkStatus("trimming video");
         const srcVideoPath = RNFS.ExternalDirectoryPath + "/" + FN.video;
@@ -182,25 +199,26 @@ function handleEvent(
         const eTime =
           parseInt((event.endTime - event.startTime) / 1000) + sTime;
         const FFMPEGcommand = `-i ${srcVideoPath} -vf trim=${sTime}:${eTime} ${eventVideoPath}`;
-        console.log(`trimming video and saving it to ${eventVideoPath}`);
-        console.log(`executing FFMPEG command: ${FFMPEGcommand}`);
+        logger("DEV", FFMPEGcommand, caller, step);
         await RNFFmpeg.execute(FFMPEGcommand);
+        logger("DEV", eventVideoPath, caller, step);
         event.video.fileName = eventVideoName;
         event.video.fullPath = eventVideoPath;
       } catch (e) {
         setWorkStatus("error trimming video");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error trimming video: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * upload video
+     * 2.1 upload video
      */
     if (!event.video.awsURL) {
+      step = "uploadVideo";
       setWorkStatus("uploading video");
       const file = {
         uri: `file://${event.video.fullPath}`,
@@ -218,9 +236,8 @@ function handleEvent(
       try {
         const res = await RNS3.put(file, options);
         if (res.status === 201) {
-          console.log("response from successful upload to s3:", res.body);
-          console.log("S3 URL", res.body.postResponse.location);
           event.video.awsURL = res.body.postResponse.location;
+          logger("DEV", res.body.postResponse.location, caller, step);
         } else {
           throw new Error(`status code = ${res.status}`);
         }
@@ -228,16 +245,17 @@ function handleEvent(
         setWorkStatus("error uploading video");
         const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading video: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * update video URL in database
+     * 2.2 update video URL in database
      */
     if (!event.video.updatedDB) {
+      step = "updateVideoURL";
       setWorkStatus("updating video URL in database");
       try {
         let response = await fetch(
@@ -256,8 +274,8 @@ function handleEvent(
           }
         );
         if (response.status === 200) {
-          console.log(`successfully updated event video url`);
           event.video.updatedDB = true;
+          logger("DEV", "video URL updated in DB", caller, step);
         } else {
           throw new Error(`status code = ${response.status}`);
         }
@@ -265,45 +283,44 @@ function handleEvent(
         setWorkStatus("error updating video URL in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error updating video URL in database: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * create thumbnail
+     * 3.0 create thumbnail
      */
     if (!event.thumbnail.fullPath) {
+      step = "createThumbnail";
       try {
         setWorkStatus("creating thumbnail");
         const srcVideoPath = event.video.fullPath;
         const eventThumbnailName = `${FN.eventPrefix}_s${event.startTime}.jpeg`;
         const eventThumbnailPath =
           event.directoryPath + "/" + eventThumbnailName;
-
         const FFMPEGcommand = `-ss ${thumbnailPos} -i ${srcVideoPath} -vframes 1 -q:v 2 ${eventThumbnailPath}`;
-        console.log(
-          `creating thumbnail and saving it to ${eventThumbnailPath}`
-        );
-        console.log(`executing FFMPEG command: ${FFMPEGcommand}`);
+        logger("DEV", FFMPEGcommand, caller, step);
         await RNFFmpeg.execute(FFMPEGcommand);
+        logger("DEV", eventThumbnailPath, caller, step);
         event.thumbnail.fileName = eventThumbnailName;
         event.thumbnail.fullPath = eventThumbnailPath;
       } catch (e) {
         setWorkStatus("error creating thumbnail");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error creating thumbnail: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * upload thumbnail
+     * 3.1 upload thumbnail
      */
     if (!event.thumbnail.awsURL) {
+      step = "uploadThumbnail";
       setWorkStatus("uploading thumbnail");
       const file = {
         uri: `file://${event.thumbnail.fullPath}`,
@@ -321,29 +338,26 @@ function handleEvent(
       try {
         const res = await RNS3.put(file, options);
         if (res.status === 201) {
-          console.log("response from successful upload to s3:", res.body);
-          console.log("S3 URL", res.body.postResponse.location);
           event.thumbnail.awsURL = res.body.postResponse.location;
+          logger("DEV", res.body.postResponse.location, caller, step);
         } else {
           throw new Error(`status code = ${res.status}`);
         }
       } catch (e) {
         setWorkStatus("error uploading thumbnail");
-        console.log(
-          "error uploading thumbnail stringified " + JSON.stringify(e)
-        );
         const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading thumbnail: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * update thumbnail URL in database
+     * 3.2 update thumbnail URL in database
      */
     if (!event.thumbnail.updatedDB) {
+      step = "updateThumbnailURL";
       setWorkStatus("updating thumbnail URL in database");
       try {
         let response = await fetch(
@@ -362,8 +376,8 @@ function handleEvent(
           }
         );
         if (response.status === 200) {
-          console.log(`successfully updated event thumbnail url`);
           event.thumbnail.updatedDB = true;
+          logger("DEV", "thumbnail URL updated in DB", caller, step);
         } else {
           throw new Error(`status code = ${response.status}`);
         }
@@ -371,16 +385,17 @@ function handleEvent(
         setWorkStatus("error updating thumbnail URL in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error updating thumbnail URL in database: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * trim telemetry
+     * 4.0 trim telemetry
      */
     if (!event.telemetry.fullPath) {
+      step = "trimTelemetry";
       try {
         setWorkStatus("trimming telemetry");
         //
@@ -388,6 +403,7 @@ function handleEvent(
           RNFS.ExternalDirectoryPath + "/" + FN.telemetry;
         let ALLtelemetry = null;
         let dataRead = "";
+        logger("DEV", `RNFS.readFile(${srcTelemetryPath})`, caller, step);
         dataRead = await RNFS.readFile(srcTelemetryPath);
         dataRead = dataRead.substring(0, dataRead.length - 1);
         dataRead = "[" + dataRead + "]";
@@ -413,6 +429,7 @@ function handleEvent(
         const eventTelemetryName = `${FN.eventPrefix}_s${event.startTime}.json`;
         const eventTelemetryPath =
           event.directoryPath + "/" + eventTelemetryName;
+        logger("DEV", `RNFS.writeFile(${eventTelemetryPath}, )`, caller, step);
         await RNFS.writeFile(eventTelemetryPath, cutTele);
         event.telemetry.fileName = eventTelemetryName;
         event.telemetry.fullPath = eventTelemetryPath;
@@ -420,16 +437,17 @@ function handleEvent(
         setWorkStatus("error trimming telemetry");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error trimming telemetry: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * upload telemetry
+     * 3.1 upload telemetry
      */
     if (!event.telemetry.awsURL) {
+      step = "uploadTelemetry";
       setWorkStatus("uploading telemetry");
       const file = {
         uri: `file://${event.telemetry.fullPath}`,
@@ -447,9 +465,8 @@ function handleEvent(
       try {
         const res = await RNS3.put(file, options);
         if (res.status === 201) {
-          console.log("response from successful upload to s3:", res.body);
-          console.log("S3 URL", res.body.postResponse.location);
           event.telemetry.awsURL = res.body.postResponse.location;
+          logger("DEV", res.body.postResponse.location, caller, step);
         } else {
           throw new Error(`status code = ${res.status}`);
         }
@@ -457,16 +474,17 @@ function handleEvent(
         setWorkStatus("error uploading telemetry");
         const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading telemetry: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * update telemetry URL in database
+     * 3.2 update telemetry URL in database
      */
     if (!event.telemetry.updatedDB) {
+      step = "updateTelemetryURL";
       setWorkStatus("updating telemetry URL in database");
       try {
         let response = await fetch(
@@ -485,8 +503,8 @@ function handleEvent(
           }
         );
         if (response.status === 200) {
-          console.log(`successfully updated event telemetry url`);
           event.telemetry.updatedDB = true;
+          logger("DEV", "telemetry URL updated in DB", caller, step);
         } else {
           throw new Error(`status code = ${response.status}`);
         }
@@ -494,7 +512,7 @@ function handleEvent(
         setWorkStatus("error updating telemetry URL in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error updating telemetry URL in database: ${eStr}`;
-        console.log(m);
+        logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);
       }

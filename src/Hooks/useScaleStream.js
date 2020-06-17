@@ -1,6 +1,9 @@
 import React from "react";
 import { Dimensions } from "react-native";
 import Orientation from "react-native-orientation-locker";
+import logger from "../logger";
+const caller = "useScaleStream.js";
+//
 export default function useScaleStream(streamWidth, streamHeight) {
   const [windowWidth, setWindowWidth] = React.useState(0);
   const [windowHeight, setWindowHeight] = React.useState(0);
@@ -27,14 +30,16 @@ export default function useScaleStream(streamWidth, streamHeight) {
     );
     setScaledWidth(Math.floor(streamWidth * scale));
     setScaledHeight(Math.floor(streamHeight * scale));
-    console.log(`
-      in useScaleStream.js
+    logger(
+      "DUMMY",
+      `in useScaleStream.js
       windowWidth = ${windowWidth} -- streamWidth = ${streamWidth}
       windowHeight = ${windowHeight} -- streamHeight = ${streamHeight}
       scale = ${scale}
       videoWidth = ${Math.floor(streamWidth * scale)}
-      videoHeight = ${Math.floor(streamHeight * scale)}
-    `);
+      videoHeight = ${Math.floor(streamHeight * scale)}`,
+      caller
+    );
   }, [windowHeight, windowWidth, streamWidth, streamHeight]);
   //
   return [scaledWidth, scaledHeight];

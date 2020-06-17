@@ -1,6 +1,8 @@
 import React from "react";
 import * as turf from "@turf/turf";
 import { piCameraInfo } from "../Assets/consts";
+import logger from "../logger";
+const caller = "useNavigateDrone.js";
 const autoCloseTimeWhenFinished = 3000;
 export default function useNavigateDrone(socket, props) {
   const [axisX, setAxisX] = React.useState(-8000);
@@ -22,12 +24,14 @@ export default function useNavigateDrone(socket, props) {
     let isSubscribed = true;
     let autoCloseTimeout = null;
     socket.on("navFinished", (navData) => {
-      const stringifiedNavData = JSON.stringify(navData, null, 2);
-      console.log(`navFinished with navData = ${stringifiedNavData}`);
       setIsNavWorking(false);
-      navData.status
-        ? setNavModalTitle("Navigation Success")
-        : setNavModalTitle("Navigation Failed");
+      if (navData.status) {
+        logger("DEV", navData.message, caller, "socket.on(navFinished)");
+        setNavModalTitle("Navigation Success");
+      } else {
+        logger("ERROR", navData.message, caller, "socket.on(navFinished)");
+        setNavModalTitle("Navigation Failed");
+      }
       setNavStatus(navData.message);
       //auto close
       autoCloseTimeout = setTimeout(() => {
@@ -49,13 +53,13 @@ export default function useNavigateDrone(socket, props) {
     if ((axisX <= -8000 || axisY <= -8000) && navCommand === "none") return;
     if (!socket) return;
     if (!socket.connected) {
-      if (navCommand !== "none") {
-        console.log(
-          `trying to emit type: ${navCommand} but socket not connected`
-        );
-      } else {
-        console.log(`trying to emit type: press but socket not connected`);
-      }
+      const comm = navCommand !== "none" ? navCommand : "press";
+      logger(
+        "WARNING",
+        "trying to emit but socket not connected",
+        caller,
+        `socket.emit(type: ${comm})`
+      );
       setNavCommand("none");
       setAxisX(-8001);
       setAxisY(-8001);
@@ -63,8 +67,8 @@ export default function useNavigateDrone(socket, props) {
     }
     //
     if (navCommand === "emergency") {
-      console.log(`emitting type: emergency to server`);
       socket.emit("command", { type: navCommand });
+      logger("DEV", `socket.emit(type: ${navCommand})`, caller);
       setNavCommand("none");
       setAxisX(-8001);
       setAxisY(-8001);
@@ -75,18 +79,21 @@ export default function useNavigateDrone(socket, props) {
     setIsNavWorking(true);
     setNavStatus("Don't close this popup");
     if (navCommand !== "none") {
-      console.log(`emitting type: ${navCommand} to server`);
       socket.emit("command", { type: navCommand });
+      logger("DEV", `socket.emit(type: ${navCommand})`, caller);
     } else {
-      console.log(`
-      starting navigation with data from drone:
-      props.droneHeightCM = ${props.droneHeightCM}
-      props.scaledWidth = ${props.scaledWidth}
-      props.scaledHeight = ${props.scaledHeight}
-      props.droneBearing = ${props.droneBearing}
-      props.centerCoordinate.lat = ${props.centerCoordinate.lat}
-      props.centerCoordinate.lon = ${props.centerCoordinate.lon}
-    `);
+      logger(
+        "DUMMY",
+        `starting navigation with data from drone:
+        props.droneHeightCM = ${props.droneHeightCM}
+        props.scaledWidth = ${props.scaledWidth}
+        props.scaledHeight = ${props.scaledHeight}
+        props.droneBearing = ${props.droneBearing}
+        props.centerCoordinate.lat = ${props.centerCoordinate.lat}
+        props.centerCoordinate.lon = ${props.centerCoordinate.lon} `,
+        caller,
+        "calculation for press command"
+      );
       const footprintCM = calcFootprint(props);
       const {
         dstDiagonalCM,
@@ -96,7 +103,6 @@ export default function useNavigateDrone(socket, props) {
         y,
       } = calcDiagonalAndBearing(footprintCM, props, axisX, axisY);
       // const dstCoordinate = calcDstCoordinate(dstDiagonalCM, dstBearing, props);
-      console.log("emitting type: press to server");
       socket.emit("command", {
         type: "press",
         distance: dstDiagonalCM,
@@ -104,6 +110,7 @@ export default function useNavigateDrone(socket, props) {
         x,
         y,
       });
+      logger("DEV", `socket.emit(type: ${navCommand})`, caller);
     }
     setNavCommand("none");
     setAxisX(-8001);
@@ -130,10 +137,13 @@ function calcFootprint(props) {
   const h = props.droneHeightCM;
   const fpWidth = Math.tan(piCameraInfo.horizontalDegree.rad / 2) * 2 * h;
   const fpHeight = Math.tan(piCameraInfo.verticalDegree.rad / 2) * 2 * h;
-  console.log(`
-        footprint width (cm) = ${fpWidth}
-        footprint height (cm) = ${fpHeight}
-      `);
+  logger(
+    "DUMMY",
+    `footprint width (cm) = ${fpWidth}
+    footprint height (cm) = ${fpHeight}`,
+    caller,
+    "calcFootprint()"
+  );
   return {
     widthCM: fpWidth,
     heightCM: fpHeight,
@@ -164,13 +174,16 @@ function calcDiagonalAndBearing(footprintCM, props, axisX, axisY) {
   if (degree < 0) degree = 360 + degree;
   const bearing = (degree + props.droneBearing) % 360;
   //
-  console.log(`
-        heightToDstCM = ${heightToDstCM}
-        widthToDstCM = ${widthToDstCM}
-        dstDiagonalCM = ${diagonal}
-        dstBearing = ${bearing}
-        clickDegree = ${degree}
-      `);
+  logger(
+    "DUMMY",
+    `heightToDstCM = ${heightToDstCM}
+    widthToDstCM = ${widthToDstCM}
+    dstDiagonalCM = ${diagonal}
+    dstBearing = ${bearing}
+    clickDegree = ${degree}`,
+    caller,
+    "calcDiagonalAndBearing()"
+  );
   return {
     dstDiagonalCM: diagonal,
     dstBearing: bearing,
@@ -186,10 +199,13 @@ function calcDstCoordinate(diagonal, bearing, props) {
   ]);
   const diagonalKM = diagonal / 100000;
   const destination = turf.destination(centerPoint, diagonalKM, bearing);
-  console.log(`
-        dstCoordinate.lat = ${destination.geometry.coordinates[1]}
-        dstCoordinate.lon = ${destination.geometry.coordinates[0]}
-      `);
+  logger(
+    "DUMMY",
+    `dstCoordinate.lat = ${destination.geometry.coordinates[1]}
+    dstCoordinate.lon = ${destination.geometry.coordinates[0]}`,
+    caller,
+    "calcDstCoordinate()"
+  );
   return {
     lat: destination.geometry.coordinates[1],
     lon: destination.geometry.coordinates[0],
