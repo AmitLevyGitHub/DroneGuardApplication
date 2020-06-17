@@ -23,7 +23,6 @@ const BeachesScreen = (props) => {
   //
   React.useEffect(() => {
     (async () => {
-      console.log("fetching beaches");
       let fail = false;
       let token = null;
       try {
@@ -70,7 +69,6 @@ const BeachesScreen = (props) => {
           );
         }
       } catch (e) {
-        console.log(e);
         const m = e.hasOwnProperty("message") ? e.message : e;
         logger("WARNING", response.status, caller, "/beaches");
         fail = true;

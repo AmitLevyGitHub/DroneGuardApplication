@@ -408,7 +408,7 @@ function handleEvent(
         dataRead = dataRead.substring(0, dataRead.length - 1);
         dataRead = "[" + dataRead + "]";
         ALLtelemetry = JSON.parse(dataRead);
-        console.log(`tele count = ${ALLtelemetry.length}`);
+        logger("DUMMY", `tele count = ${ALLtelemetry.length}`, caller, step);
         //
         let cutTele = "";
         for (let i = 0; i < ALLtelemetry.length; i++) {

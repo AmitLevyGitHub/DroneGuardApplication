@@ -24,7 +24,6 @@ const LogInScreen = (props) => {
   const [token, setToken] = React.useState(null);
   //
   const onLogin = async () => {
-    console.log("onLogin");
     //API call
     let fail = false;
     let tokenTmp = null;
