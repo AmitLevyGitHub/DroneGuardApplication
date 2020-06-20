@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 import logger from "../logger";
 const caller = "JoystickLeft.js";
-const JoystickLeft = (props) => {
+const JoystickLeft = props => {
   const { setNavCommand } = props;
   return (
     <View style={styles.container}>
@@ -57,8 +57,8 @@ const JoystickLeft = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 120,
-    height: 120,
+    width: 180,
+    height: 180,
     borderWidth: 4,
     borderStyle: "solid",
     borderColor: "#fff",
@@ -66,82 +66,79 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     position: "absolute",
     left: 20,
-    bottom: 5,
-    zIndex: 999,
+    bottom: 10,
+    zIndex: 999
   },
   btn: {
     width: 0,
     height: 0,
-    borderStyle: "solid",
+    borderStyle: "solid"
   },
   btnUpContainer: {
     width: "100%",
-    height: "30%",
-    // backgroundColor: "blue"
+    height: "30%"
   },
   btnUp: {
-    borderLeftWidth: 15,
+    borderLeftWidth: 20,
     borderLeftColor: "transparent",
-    borderRightWidth: 15,
+    borderRightWidth: 20,
     borderRightColor: "transparent",
-    borderBottomWidth: 15,
+    borderBottomWidth: 20,
     borderBottomColor: "#fff",
-    marginTop: 10,
+    marginTop: 15,
     marginLeft: "auto",
-    marginRight: "auto",
+    marginRight: "auto"
   },
   btnLeftRightContainer: {
     flexDirection: "row",
     width: "100%",
     height: "30%",
     justifyContent: "space-between",
-    alignItems: "center",
-    // backgroundColor: "red"
+    alignItems: "center"
   },
   btnLeft: {
     alignItems: "center",
     justifyContent: "center",
-    borderTopWidth: 15,
+    borderTopWidth: 20,
     borderTopColor: "transparent",
-    borderRightWidth: 15,
+    borderRightWidth: 20,
     borderRightColor: "#fff",
-    borderBottomWidth: 15,
+    borderBottomWidth: 20,
     borderBottomColor: "transparent",
-    marginLeft: 10,
+    marginLeft: 15
   },
   btnRightContainer: {
-    justifyContent: "center",
+    justifyContent: "center"
   },
   btnRight: {
     alignItems: "center",
     justifyContent: "center",
-    borderTopWidth: 15,
+    borderTopWidth: 20,
     borderTopColor: "transparent",
-    borderLeftWidth: 15,
+    borderLeftWidth: 20,
     borderLeftColor: "#fff",
-    borderBottomWidth: 15,
+    borderBottomWidth: 20,
     borderBottomColor: "transparent",
-    marginRight: 10,
+    marginRight: 15
   },
   btnDownContainer: {
     width: "100%",
     height: "30%",
-    justifyContent: "flex-end",
-    // backgroundColor: "orange"
+    justifyContent: "flex-end"
   },
   btnDown: {
-    borderLeftWidth: 15,
+    borderLeftWidth: 20,
     borderLeftColor: "transparent",
-    borderRightWidth: 15,
+    borderRightWidth: 20,
     borderRightColor: "transparent",
-    borderTopWidth: 15,
+    borderTopWidth: 20,
     borderTopColor: "#fff",
-    marginBottom: 10,
+    marginBottom: 15,
     marginLeft: "auto",
-    marginRight: "auto",
-  },
+    marginRight: "auto"
+  }
 });
 JoystickLeft.propTypes = {
-  setNavCommand: PropTypes.func.isRequired,
+  setNavCommand: PropTypes.func.isRequired
 };
 export default JoystickLeft;

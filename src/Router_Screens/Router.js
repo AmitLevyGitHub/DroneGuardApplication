@@ -1,45 +1,28 @@
-import React from "react";
-import { S, AS } from "../Assets/consts";
+import React, { useState, useEffect } from "react";
+import { Screens, AS } from "../Assets/consts";
 import LoadScreen from "./LoadScreen";
 import LogInScreen from "./LogIn";
-import BeachesScreen from "./Beaches";
 import HomeScreen from "./HomeScreen";
 import UploadScreen from "./UploadScreen";
 import StreamScreen from "./StreamScreen";
 import AsyncStorage from "@react-native-community/async-storage";
-global.Buffer = global.Buffer || require("buffer").Buffer;
 import { forceUpload } from "../Assets/consts";
 import logger from "../logger";
 const caller = "Router.js";
-//
+
 const Router = () => {
-  const [screen, setScreen] = React.useState("load");
-  const [userEvents, setUserEvents] = React.useState([]);
-  React.useEffect(() => {
+  const [screen, setScreen] = useState("load");
+  const [userEvents, setUserEvents] = useState([]);
+
+  useEffect(() => {
     (async () => {
-      //
-      //check if logged in
       let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem(AS.userToken);
-      } catch (e) {
-        const m = e.hasOwnProperty("message") ? e.message : e;
-        logger("ERROR", m, caller, `AsyncStorage.getItem(${AS.userToken})`);
-      }
-      //
-      //check if beach chosen
       let beachId = null;
-      try {
-        beachId = await AsyncStorage.getItem(AS.beachId);
-      } catch (e) {
-        const m = e.hasOwnProperty("message") ? e.message : e;
-        logger("ERROR", m, caller, `AsyncStorage.getItem(${AS.beachId})`);
-      }
-      //
-      //check upload status
       let uploadStatus = [];
       try {
-        uploadStatusString = await AsyncStorage.getItem(AS.uploadStatus);
+        userToken = await AsyncStorage.getItem(AS.userToken);
+        beachId = await AsyncStorage.getItem(AS.beachId);
+        const uploadStatusString = await AsyncStorage.getItem(AS.uploadStatus);
         if (uploadStatusString) {
           uploadStatus = JSON.parse(uploadStatusString);
           if (!Array.isArray(uploadStatus)) {
@@ -47,38 +30,34 @@ const Router = () => {
           }
         }
       } catch (e) {
-        const m = e.hasOwnProperty("message") ? e.message : e;
-        logger("ERROR", m, caller, `AsyncStorage.getItem(${AS.uploadStatus})`);
+        logger("ERROR", e.message || e, caller, `AsyncStorage.getItem()`);
       }
-      //
-      //navigate
-      if (!userToken) {
-        setScreen(S.login);
-      } else if (!beachId) {
-        setScreen(S.beaches);
+
+      if (!userToken || (userToken && !beachId)) {
+        setScreen(Screens.login);
       } else {
-        if (forceUpload && uploadStatus.length > 0 && uploadStatus[0] !== 1) {
-          setScreen(S.upload);
+        if (forceUpload && uploadStatus.length && uploadStatus[0] !== 1) {
+          setScreen(Screens.upload);
         } else {
-          setScreen(S.home);
+          setScreen(Screens.home);
         }
       }
     })();
   }, []);
+
   return (
     <React.Fragment>
-      {screen === S.load && <LoadScreen />}
-      {screen === S.login && <LogInScreen setScreen={setScreen} />}
-      {screen === S.beaches && <BeachesScreen setScreen={setScreen} />}
-      {screen === S.home && <HomeScreen setScreen={setScreen} />}
-      {screen === S.stream && (
+      {screen === Screens.load && <LoadScreen />}
+      {screen === Screens.login && <LogInScreen setScreen={setScreen} />}
+      {screen === Screens.home && <HomeScreen setScreen={setScreen} />}
+      {screen === Screens.stream && (
         <StreamScreen
           setScreen={setScreen}
           setUserEvents={setUserEvents}
           userEvents={userEvents}
         />
       )}
-      {screen === S.upload && (
+      {screen === Screens.upload && (
         <UploadScreen
           setScreen={setScreen}
           setUserEvents={setUserEvents}

@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 
 const LoadScreen = () => {
   return (
@@ -8,10 +8,9 @@ const LoadScreen = () => {
         flex: 1,
         justifyContent: "space-around",
         alignItems: "center",
-        backgroundColor: "#0077be",
+        backgroundColor: "black"
       }}
     >
-      <Text style={{ color: "#ffffff", fontSize: 60 }}>Please Wait</Text>
       <ActivityIndicator
         size="large"
         color="#ffffff"
@@ -20,4 +19,12 @@ const LoadScreen = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  imageStyle: {
+    width: 250,
+    height: 150
+  }
+});
+
 export default LoadScreen;

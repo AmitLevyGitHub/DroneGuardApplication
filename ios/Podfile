@@ -35,6 +35,8 @@ target 'app3_DroneGuard' do
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
 
+  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
+
   target 'app3_DroneGuardTests' do
     inherit! :search_paths
     # Pods for testing

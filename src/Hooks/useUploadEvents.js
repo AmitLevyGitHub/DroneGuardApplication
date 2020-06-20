@@ -66,8 +66,8 @@ export default function useUploadEvents(
         } catch (error) {
           isError = true;
           event.status = "failed";
-          const newFailedEvents = failedEvents.map((failedEvent) => ({
-            ...failedEvent,
+          const newFailedEvents = failedEvents.map(failedEvent => ({
+            ...failedEvent
           }));
           newFailedEvents.push({ index: event.index, status: error });
           setFailedEvents(newFailedEvents);
@@ -95,14 +95,14 @@ export default function useUploadEvents(
     eventsStatus,
     videoStat,
     tokenIDs,
-    firstTeleTime,
+    firstTeleTime
   ]);
   //
   return [currentEvent, workStatus, loopFinished, failedEvents];
 }
 async function handleEventFake() {
   function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
   await sleep(5000);
 }
@@ -126,7 +126,7 @@ function handleEvent(
      */
     if (!event.directoryPath) {
       step = "createDirectory";
-      setWorkStatus("creating directory on device");
+      setWorkStatus("Creating directory on device");
       const dirName = `${FN.eventPrefix}_s_${event.startTime}`;
       const dirPath = `${RNFS.ExternalDirectoryPath}/${dirName}`;
       try {
@@ -135,7 +135,7 @@ function handleEvent(
         event.directoryName = dirName;
         logger("DEV", dirPath, caller, step);
       } catch (e) {
-        setWorkStatus("error creating directory on device");
+        setWorkStatus("Error creating directory on device");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error creating directory on device: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -149,7 +149,7 @@ function handleEvent(
      */
     if (!event.ID) {
       step = "createEventInDB";
-      setWorkStatus("creating event in database");
+      setWorkStatus("Creating event in database");
       try {
         let response = await fetch(
           "https://drone-guard-debriefing-server.herokuapp.com/addEvent",
@@ -158,14 +158,14 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token,
+              authorization: "Bearer " + token
             },
             body: JSON.stringify({
               startTime: event.startTime,
               endTime: event.endTime,
               lifeGuardId,
-              beachId,
-            }),
+              beachId
+            })
           }
         );
         if (response.status === 200) {
@@ -176,7 +176,7 @@ function handleEvent(
           throw new Error(`status code = ${response.status}`);
         }
       } catch (e) {
-        setWorkStatus("error creating event in database");
+        setWorkStatus("Error creating event in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error creating event in database: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -191,7 +191,7 @@ function handleEvent(
     if (!event.video.fullPath) {
       step = "trimVideo";
       try {
-        setWorkStatus("trimming video");
+        setWorkStatus("Trimming video");
         const srcVideoPath = RNFS.ExternalDirectoryPath + "/" + FN.video;
         const eventVideoName = `${FN.eventPrefix}_s${event.startTime}.mp4`;
         const eventVideoPath = event.directoryPath + "/" + eventVideoName;
@@ -205,7 +205,7 @@ function handleEvent(
         event.video.fileName = eventVideoName;
         event.video.fullPath = eventVideoPath;
       } catch (e) {
-        setWorkStatus("error trimming video");
+        setWorkStatus("Error trimming video");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error trimming video: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -219,11 +219,11 @@ function handleEvent(
      */
     if (!event.video.awsURL) {
       step = "uploadVideo";
-      setWorkStatus("uploading video");
+      setWorkStatus("Uploading video to S3 bucket");
       const file = {
         uri: `file://${event.video.fullPath}`,
         name: event.video.fileName,
-        type: "video/mp4",
+        type: "video/mp4"
       };
       const options = {
         keyPrefix: `${event.directoryName}/`,
@@ -231,7 +231,7 @@ function handleEvent(
         region: "eu-west-1",
         accessKey: AWSkeys.accessKey,
         secretKey: AWSkeys.secretKey,
-        successActionStatus: 201,
+        successActionStatus: 201
       };
       try {
         const res = await RNS3.put(file, options);
@@ -242,7 +242,7 @@ function handleEvent(
           throw new Error(`status code = ${res.status}`);
         }
       } catch (e) {
-        setWorkStatus("error uploading video");
+        setWorkStatus("Error uploading video to S3 bucket");
         const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading video: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -256,7 +256,7 @@ function handleEvent(
      */
     if (!event.video.updatedDB) {
       step = "updateVideoURL";
-      setWorkStatus("updating video URL in database");
+      setWorkStatus("Updating video URL in database");
       try {
         let response = await fetch(
           "https://drone-guard-debriefing-server.herokuapp.com/updateEvent",
@@ -265,12 +265,12 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token,
+              authorization: "Bearer " + token
             },
             body: JSON.stringify({
               eventId: event.ID,
-              videoUrl: event.video.awsURL,
-            }),
+              videoUrl: event.video.awsURL
+            })
           }
         );
         if (response.status === 200) {
@@ -280,7 +280,7 @@ function handleEvent(
           throw new Error(`status code = ${response.status}`);
         }
       } catch (e) {
-        setWorkStatus("error updating video URL in database");
+        setWorkStatus("Error updating video URL in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error updating video URL in database: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -295,7 +295,7 @@ function handleEvent(
     if (!event.thumbnail.fullPath) {
       step = "createThumbnail";
       try {
-        setWorkStatus("creating thumbnail");
+        setWorkStatus("Creating video thumbnail");
         const srcVideoPath = event.video.fullPath;
         const eventThumbnailName = `${FN.eventPrefix}_s${event.startTime}.jpeg`;
         const eventThumbnailPath =
@@ -307,7 +307,7 @@ function handleEvent(
         event.thumbnail.fileName = eventThumbnailName;
         event.thumbnail.fullPath = eventThumbnailPath;
       } catch (e) {
-        setWorkStatus("error creating thumbnail");
+        setWorkStatus("Error creating video thumbnail");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error creating thumbnail: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -321,11 +321,11 @@ function handleEvent(
      */
     if (!event.thumbnail.awsURL) {
       step = "uploadThumbnail";
-      setWorkStatus("uploading thumbnail");
+      setWorkStatus("Uploading thumbnail to S3 bucket");
       const file = {
         uri: `file://${event.thumbnail.fullPath}`,
         name: event.thumbnail.fileName,
-        type: "image/jpeg",
+        type: "image/jpeg"
       };
       const options = {
         keyPrefix: `${event.directoryName}/`,
@@ -333,7 +333,7 @@ function handleEvent(
         region: "eu-west-1",
         accessKey: AWSkeys.accessKey,
         secretKey: AWSkeys.secretKey,
-        successActionStatus: 201,
+        successActionStatus: 201
       };
       try {
         const res = await RNS3.put(file, options);
@@ -344,7 +344,7 @@ function handleEvent(
           throw new Error(`status code = ${res.status}`);
         }
       } catch (e) {
-        setWorkStatus("error uploading thumbnail");
+        setWorkStatus("Error uploading thumbnail to S3 bucket");
         const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading thumbnail: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -358,7 +358,7 @@ function handleEvent(
      */
     if (!event.thumbnail.updatedDB) {
       step = "updateThumbnailURL";
-      setWorkStatus("updating thumbnail URL in database");
+      setWorkStatus("Updating thumbnail URL in database");
       try {
         let response = await fetch(
           "https://drone-guard-debriefing-server.herokuapp.com/updateEvent",
@@ -367,12 +367,12 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token,
+              authorization: "Bearer " + token
             },
             body: JSON.stringify({
               eventId: event.ID,
-              thumbnailURL: event.thumbnail.awsURL,
-            }),
+              thumbnailURL: event.thumbnail.awsURL
+            })
           }
         );
         if (response.status === 200) {
@@ -382,7 +382,7 @@ function handleEvent(
           throw new Error(`status code = ${response.status}`);
         }
       } catch (e) {
-        setWorkStatus("error updating thumbnail URL in database");
+        setWorkStatus("Error updating thumbnail URL in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error updating thumbnail URL in database: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -397,7 +397,7 @@ function handleEvent(
     if (!event.telemetry.fullPath) {
       step = "trimTelemetry";
       try {
-        setWorkStatus("trimming telemetry");
+        setWorkStatus("Trimming telemetry");
         //
         const srcTelemetryPath =
           RNFS.ExternalDirectoryPath + "/" + FN.telemetry;
@@ -434,7 +434,7 @@ function handleEvent(
         event.telemetry.fileName = eventTelemetryName;
         event.telemetry.fullPath = eventTelemetryPath;
       } catch (e) {
-        setWorkStatus("error trimming telemetry");
+        setWorkStatus("Error trimming telemetry");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error trimming telemetry: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -448,11 +448,11 @@ function handleEvent(
      */
     if (!event.telemetry.awsURL) {
       step = "uploadTelemetry";
-      setWorkStatus("uploading telemetry");
+      setWorkStatus("Uploading telemetry");
       const file = {
         uri: `file://${event.telemetry.fullPath}`,
         name: event.telemetry.fileName,
-        type: "application/json",
+        type: "application/json"
       };
       const options = {
         keyPrefix: `${event.directoryName}/`,
@@ -460,7 +460,7 @@ function handleEvent(
         region: "eu-west-1",
         accessKey: AWSkeys.accessKey,
         secretKey: AWSkeys.secretKey,
-        successActionStatus: 201,
+        successActionStatus: 201
       };
       try {
         const res = await RNS3.put(file, options);
@@ -471,7 +471,7 @@ function handleEvent(
           throw new Error(`status code = ${res.status}`);
         }
       } catch (e) {
-        setWorkStatus("error uploading telemetry");
+        setWorkStatus("Error uploading telemetry");
         const eStr = e.hasOwnProperty("text") ? e.text : e;
         const m = `error uploading telemetry: ${eStr}`;
         logger("ERROR", eStr, caller, step);
@@ -485,7 +485,7 @@ function handleEvent(
      */
     if (!event.telemetry.updatedDB) {
       step = "updateTelemetryURL";
-      setWorkStatus("updating telemetry URL in database");
+      setWorkStatus("Updating telemetry URL in database");
       try {
         let response = await fetch(
           "https://drone-guard-debriefing-server.herokuapp.com/updateEvent",
@@ -494,12 +494,12 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token,
+              authorization: "Bearer " + token
             },
             body: JSON.stringify({
               eventId: event.ID,
-              telemtryURL: event.telemetry.awsURL, //"telemtryURL" is a typo in DB schema- it is ok!
-            }),
+              telemtryURL: event.telemetry.awsURL //"telemtryURL" is a typo in DB schema- it is ok!
+            })
           }
         );
         if (response.status === 200) {
@@ -509,7 +509,7 @@ function handleEvent(
           throw new Error(`status code = ${response.status}`);
         }
       } catch (e) {
-        setWorkStatus("error updating telemetry URL in database");
+        setWorkStatus("Error updating telemetry URL in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error updating telemetry URL in database: ${eStr}`;
         logger("ERROR", eStr, caller, step);

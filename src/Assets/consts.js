@@ -3,7 +3,7 @@
  */
 export const shouldSave = {
   tele: true,
-  video: true,
+  video: true
 };
 /**
  * upload screen
@@ -14,7 +14,7 @@ export const forceUpload = false;
  * navigation consts
  */
 export const navConsts = {
-  emergencyHeight: 249,
+  emergencyHeight: 249
 };
 /**
  * telemetry socket
@@ -23,7 +23,7 @@ export const telemetryDevice = {
   // ip: "192.168.68.118",
   ip: "192.168.0.150",
   // port: 2222,
-  port: 3000,
+  port: 3000
 };
 /**
  * streaming & socket
@@ -32,20 +32,19 @@ const streamDeviceDomain = "192.168.0.150";
 // const streamDeviceDomain = "192.168.10.1";
 export const streamingDevice = {
   ip: streamDeviceDomain,
-  url: `rtsp://${streamDeviceDomain}:8160/`,
+  url: `rtsp://${streamDeviceDomain}:8160/`
   // url: `udp://${streamDeviceDomain}:11111`,
   // url: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
 };
 /**
  * screens
  */
-export const S = {
+export const Screens = {
   load: "load",
   login: "login",
-  beaches: "beaches",
   home: "home",
   stream: "stream",
-  upload: "upload",
+  upload: "upload"
 };
 /**
  * files & directories names
@@ -58,7 +57,7 @@ export const FN = {
   eventPrefix: "event",
   //
   events: "emergencyEvents.txt",
-  appErrors: "appErrors.txt",
+  appErrors: "appErrors.txt"
 };
 /**
  * async storage keys
@@ -66,10 +65,10 @@ export const FN = {
 export const AS = {
   userToken: "@userToken",
   lifeGuardId: "@lifeGuardId",
+  lifeGuardImage: "@lifeGuardImage",
   beachId: "@beachId",
   uploadStatus: "@uploadStatus",
-  //
-  emergencyEvent: "@emergencyEvent",
+  emergencyEvent: "@emergencyEvent"
 };
 /**
  * camera details
@@ -90,5 +89,29 @@ export const piCameraInfo = {
   xDimensions: 3.6, //mm
   yDimensions: 2.7, //mm
   horizontalDegree: { ...lenFormula(3.6, 3.6) },
-  verticalDegree: { ...lenFormula(3.6, 2.7) },
+  verticalDegree: { ...lenFormula(3.6, 2.7) }
+};
+
+export const StyleConsts = {
+  logo: {
+    width: 490 / 6,
+    height: 367 / 6
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 50
+  },
+  backgroundContainerStyle: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+    backgroundPosition: "cover"
+  },
+  modal: {
+    width: 500,
+    height: 400
+  }
 };
