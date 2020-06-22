@@ -16,7 +16,8 @@ export default function useUploadEvents(
   eventsStatus,
   videoStat,
   tokenIDs,
-  firstTeleTime
+  firstTeleTime,
+  loggerURL
 ) {
   const [currentEvent, setCurrentEvent] = React.useState({ index: -1 });
   const [workStatus, setWorkStatus] = React.useState("creating directory");
@@ -54,7 +55,8 @@ export default function useUploadEvents(
             event,
             setWorkStatus,
             tokenIDs,
-            firstTeleTime
+            firstTeleTime,
+            loggerURL
           );
           event.status = "done";
           logger(
@@ -66,8 +68,8 @@ export default function useUploadEvents(
         } catch (error) {
           isError = true;
           event.status = "failed";
-          const newFailedEvents = failedEvents.map(failedEvent => ({
-            ...failedEvent
+          const newFailedEvents = failedEvents.map((failedEvent) => ({
+            ...failedEvent,
           }));
           newFailedEvents.push({ index: event.index, status: error });
           setFailedEvents(newFailedEvents);
@@ -95,14 +97,14 @@ export default function useUploadEvents(
     eventsStatus,
     videoStat,
     tokenIDs,
-    firstTeleTime
+    firstTeleTime,
   ]);
   //
   return [currentEvent, workStatus, loopFinished, failedEvents];
 }
 async function handleEventFake() {
   function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
   await sleep(5000);
 }
@@ -112,7 +114,8 @@ function handleEvent(
   event,
   setWorkStatus,
   tokenIDs,
-  firstTeleTime
+  firstTeleTime,
+  loggerURL
 ) {
   return new Promise(async (resolve, reject) => {
     let step = null;
@@ -158,14 +161,15 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token
+              authorization: "Bearer " + token,
             },
             body: JSON.stringify({
               startTime: event.startTime,
               endTime: event.endTime,
               lifeGuardId,
-              beachId
-            })
+              beachId,
+              loggerURL,
+            }),
           }
         );
         if (response.status === 200) {
@@ -223,7 +227,7 @@ function handleEvent(
       const file = {
         uri: `file://${event.video.fullPath}`,
         name: event.video.fileName,
-        type: "video/mp4"
+        type: "video/mp4",
       };
       const options = {
         keyPrefix: `${event.directoryName}/`,
@@ -231,7 +235,7 @@ function handleEvent(
         region: "eu-west-1",
         accessKey: AWSkeys.accessKey,
         secretKey: AWSkeys.secretKey,
-        successActionStatus: 201
+        successActionStatus: 201,
       };
       try {
         const res = await RNS3.put(file, options);
@@ -265,12 +269,12 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token
+              authorization: "Bearer " + token,
             },
             body: JSON.stringify({
               eventId: event.ID,
-              videoUrl: event.video.awsURL
-            })
+              videoUrl: event.video.awsURL,
+            }),
           }
         );
         if (response.status === 200) {
@@ -325,7 +329,7 @@ function handleEvent(
       const file = {
         uri: `file://${event.thumbnail.fullPath}`,
         name: event.thumbnail.fileName,
-        type: "image/jpeg"
+        type: "image/jpeg",
       };
       const options = {
         keyPrefix: `${event.directoryName}/`,
@@ -333,7 +337,7 @@ function handleEvent(
         region: "eu-west-1",
         accessKey: AWSkeys.accessKey,
         secretKey: AWSkeys.secretKey,
-        successActionStatus: 201
+        successActionStatus: 201,
       };
       try {
         const res = await RNS3.put(file, options);
@@ -367,12 +371,12 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token
+              authorization: "Bearer " + token,
             },
             body: JSON.stringify({
               eventId: event.ID,
-              thumbnailURL: event.thumbnail.awsURL
-            })
+              thumbnailURL: event.thumbnail.awsURL,
+            }),
           }
         );
         if (response.status === 200) {
@@ -452,7 +456,7 @@ function handleEvent(
       const file = {
         uri: `file://${event.telemetry.fullPath}`,
         name: event.telemetry.fileName,
-        type: "application/json"
+        type: "application/json",
       };
       const options = {
         keyPrefix: `${event.directoryName}/`,
@@ -460,7 +464,7 @@ function handleEvent(
         region: "eu-west-1",
         accessKey: AWSkeys.accessKey,
         secretKey: AWSkeys.secretKey,
-        successActionStatus: 201
+        successActionStatus: 201,
       };
       try {
         const res = await RNS3.put(file, options);
@@ -494,12 +498,12 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token
+              authorization: "Bearer " + token,
             },
             body: JSON.stringify({
               eventId: event.ID,
-              telemtryURL: event.telemetry.awsURL //"telemtryURL" is a typo in DB schema- it is ok!
-            })
+              telemtryURL: event.telemetry.awsURL, //"telemtryURL" is a typo in DB schema- it is ok!
+            }),
           }
         );
         if (response.status === 200) {
