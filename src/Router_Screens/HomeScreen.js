@@ -19,6 +19,7 @@ import {
 } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
 import logger from "../logger";
+import Avatar from "../Components/Avatar";
 const caller = "HomeScreen.js";
 
 const HomeScreen = props => {
@@ -69,10 +70,7 @@ const HomeScreen = props => {
           >
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableWithoutFeedback>
-          <Image
-            source={require("../Assets/StaticLifeGuards/man.jpg")}
-            style={StyleConsts.avatar}
-          />
+          <Avatar />
         </View>
       </View>
       <View style={styles.cardsContainer}>

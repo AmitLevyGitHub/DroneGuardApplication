@@ -20,10 +20,11 @@ export const navConsts = {
  * telemetry socket
  */
 export const telemetryDevice = {
-  ip: "192.168.68.118",
-  // ip: "192.168.0.150",
+  // ip: "192.168.68.118",
+  ip: "192.168.0.150",
   // port: 2222,
   port: 3000,
+  lifeBeltPort: 5000,
 };
 /**
  * streaming & socket

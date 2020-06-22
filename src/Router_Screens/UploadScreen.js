@@ -118,11 +118,11 @@ const UploadScreen = (props) => {
   const getEventStatusIcon = (status) => {
     let source;
     if (status === "working")
-      return (source = require("../Assets/Icons/success.png"));
+      return (source = require("../Assets/Icons/uploaded_in_progress.gif"));
     if (status === "done")
-      return (source = require("../Assets/Icons/success.png"));
+      return (source = require("../Assets/Icons/uploaded_done.png"));
     if (status === "failed")
-      return (source = require("../Assets/Icons/failed.png"));
+      return (source = require("../Assets/Icons/uploaded_failed.png"));
     return source;
   };
 
@@ -217,7 +217,7 @@ const UploadScreen = (props) => {
                       <View style={styles.listItemEvent} key={event.startTime}>
                         <Image
                           source={getEventStatusIcon(event.status)}
-                          style={{ width: 25, height: 25 }}
+                          style={{ width: 40, height: 25 }}
                         />
                         <Text style={styles.eventText}>
                           Event #{event.index + 1}

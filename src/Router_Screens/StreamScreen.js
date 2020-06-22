@@ -33,7 +33,7 @@ const caller = "StreamScreen.js";
 const StreamScreen = props => {
   const streamWidth = 1920;
   const streamHeight = 1080;
-  const [socket] = useSocket();
+  const [socket, lifeBeltSocket] = useSocket();
   const [hasStarted, setHasStarted] = useState(false);
   const [droneTele, gpsTele] = useTelemetry(socket, hasStarted);
   useSaveStream(socket, hasStarted);
@@ -58,6 +58,7 @@ const StreamScreen = props => {
   });
   const [eventStartTime, setEventStartTime] = useState(-1);
   const [isReleaseModalOpen, setIsReleaseModalOpen] = useState(false);
+  const [releasedLifeVest, setReleasedLifeVest] = useState(false);
 
   useEffect(() => {
     return async function cleanup() {
@@ -93,6 +94,10 @@ const StreamScreen = props => {
   const batteryImageSource = require("../Assets/Icons/battery.png");
   const logoImageSource = require("../Assets/Icons/logo.png");
   const lifeGuardAvatar = require("../Assets/StaticLifeGuards/man.jpg");
+  const lifeVestIcon = releasedLifeVest
+    ? require("../Assets/Icons/close_lifebelt.png")
+    : require("../Assets/Icons/release_lifebelt.png");
+  const pttIcon = require("../Assets/Icons/ptt_icon.png");
 
   const handlePressIn = () => {
     console.log("Press In");
@@ -150,15 +155,18 @@ const StreamScreen = props => {
   };
 
   const handleRelease = () => {
-    setIsReleaseModalOpen(true);
+    if (!releasedLifeVest) {
+      setIsReleaseModalOpen(true);
+    } else {
+      setReleasedLifeVest(false);
+      lifeBeltSocket.emit("release", "close");
+    }
   };
 
   const handleReleaseConfirm = () => {
-    console.log(
-      "here we are doing what we need to do in order to release life vest and save lives"
-    );
+    lifeBeltSocket.emit("release", "open");
     setIsReleaseModalOpen(false);
-    global.releasedLiveVest = true;
+    setReleasedLifeVest(!releasedLifeVest);
   };
   return (
     <Provider>
@@ -269,21 +277,23 @@ const StreamScreen = props => {
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
             >
-              <Text style={{ color: "white" }}>PTT</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.btn}
-              onPress={handleRelease}
-              disabled={global.releasedLiveVest}
-            >
-              <Text
+              <Image
+                source={pttIcon}
                 style={{
-                  color: "white",
-                  opacity: global.releasedLiveVest ? 0.5 : 1
+                  width: 25,
+                  height: 30
                 }}
-              >
-                RELEASE
-              </Text>
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.btn} onPress={handleRelease}>
+              <Image
+                source={lifeVestIcon}
+                style={{
+                  width: 25,
+                  height: 45,
+                  marginRight: releasedLifeVest ? 3 : 4
+                }}
+              />
             </TouchableOpacity>
             <Image source={lifeGuardAvatar} style={StyleConsts.avatar} />
           </View>
