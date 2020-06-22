@@ -17,6 +17,7 @@ import {
   StyleConsts,
   AS
 } from "../Assets/consts";
+import { Button } from "@ant-design/react-native";
 import AsyncStorage from "@react-native-community/async-storage";
 import logger from "../logger";
 import Avatar from "../Components/Avatar";
@@ -64,12 +65,12 @@ const HomeScreen = props => {
           />
         </TouchableWithoutFeedback>
         <View style={styles.avatarContainer}>
-          <TouchableWithoutFeedback
+          <Button
             onPress={onLogout}
-            style={styles.zIndexStyle}
+            style={[styles.zIndexStyle, styles.logoutButton]}
           >
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableWithoutFeedback>
+            <Text style={{ color: "#fff" }}>Logout</Text>
+          </Button>
           <Avatar />
         </View>
       </View>
@@ -160,13 +161,22 @@ const styles = StyleSheet.create({
   avatarContainer: {
     display: "flex",
     flexDirection: "row",
-    width: 130,
+    width: 170,
     justifyContent: "space-between",
     alignItems: "center"
   },
   logoutText: {
     color: "#fff",
     fontSize: 18
+  },
+  logoutButton: {
+    borderWidth: 1,
+    borderRadius: 30,
+    borderColor: "#fff",
+    borderStyle: "solid",
+    width: 100,
+    height: 30,
+    backgroundColor: "transparent"
   }
 });
 
