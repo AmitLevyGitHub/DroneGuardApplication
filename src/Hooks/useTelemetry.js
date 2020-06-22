@@ -23,7 +23,7 @@ export default function useTelemetry(socket, hasStarted) {
     const save = shouldSave.tele;
     if (!hasStarted && !socket) return;
     socket.on("allTelemetry", (receivedTele) => {
-      logger("DEV", "telemetry received", caller, "socket.on(allTelemetry)");
+      logger("DUMMY", "telemetry received", caller, "socket.on(allTelemetry)");
       // console.log(`data received with altitude = ${M.altitude}`);
       // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
       // console.log(`altitude = ${receivedTele.altitude}`);

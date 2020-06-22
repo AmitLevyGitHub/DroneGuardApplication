@@ -38,20 +38,17 @@ const LogInScreen = props => {
   const onLogin = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://drone-guard-debriefing-server.herokuapp.com/login",
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            email: username,
-            password: password
-          })
-        }
-      );
+      const response = await fetch("https://drone-guard-debriefing-server.herokuapp.com/login", {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password
+        })
+      });
       const { status, message } = response;
       const loginResponse = await response.json();
       if (status === 200) {
@@ -59,10 +56,15 @@ const LogInScreen = props => {
         try {
           await AsyncStorage.setItem(AS.userToken, loginResponse.token);
           await AsyncStorage.setItem(AS.lifeGuardId, loginResponse.user._id);
-          if (loginResponse.user.image) {
+          console.log("loginResponse.userData:", loginResponse.userData);
+          if (
+            loginResponse.userData &&
+            loginResponse.userData[0] &&
+            loginResponse.userData[0].image
+          ) {
             await AsyncStorage.setItem(
               AS.lifeGuardImage,
-              loginResponse.user.image
+              loginResponse.userData[0].image
             );
           }
           setShowBeachesModal(true);
