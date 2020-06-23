@@ -126,6 +126,11 @@ const UploadScreen = (props) => {
     return source;
   };
 
+  const formatTime = startTime => {
+    const formattedTime = new Date(startTime);
+    return `${formattedTime.getHours()}:${formattedTime.getMinutes()}:${formattedTime.getSeconds()}`;
+  };
+
   return (
     <Provider>
       <ImageBackground
@@ -253,7 +258,7 @@ const UploadScreen = (props) => {
                   <View style={styles.contentView}>
                     <Text style={styles.infoHeading}>Start Time</Text>
                     <Text style={styles.infoContent}>
-                      {currentEvent.startTime}
+                      {formatTime(currentEvent.startTime)}
                     </Text>
                   </View>
                   <View style={styles.contentView}>
@@ -380,7 +385,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: 450,
-    height: 180,
+    height: 180
   },
 });
 
