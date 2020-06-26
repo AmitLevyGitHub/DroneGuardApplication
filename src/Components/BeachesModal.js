@@ -19,15 +19,18 @@ const BeachesModal = ({ onChooseBeach }) => {
   useEffect(() => {
     (async () => {
       const userToken = await AsyncStorage.getItem(AS.userToken);
-
-      fetch("https://drone-guard-debriefing-server.herokuapp.com/beaches", {
-        method: "GET",
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-          authorization: "Bearer " + userToken
+      const lifeGuardId = await AsyncStorage.getItem(AS.lifeGuardId);
+      fetch(
+        `https://drone-guard-debriefing-server.herokuapp.com/beachesByLifeGuard/${lifeGuardId}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            authorization: "Bearer " + userToken
+          }
         }
-      })
+      )
         .then(async response => {
           if (response.status === 200) {
             let beachesResponse = await response.json();
