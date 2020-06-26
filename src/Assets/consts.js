@@ -3,7 +3,7 @@
  */
 export const shouldSave = {
   tele: true,
-  video: true,
+  video: true
 };
 /**
  * upload screen
@@ -14,7 +14,7 @@ export const forceUpload = false;
  * navigation consts
  */
 export const navConsts = {
-  emergencyHeight: 249,
+  emergencyHeight: 249
 };
 /**
  * telemetry socket
@@ -24,7 +24,7 @@ export const telemetryDevice = {
   ip: "192.168.0.150",
   // port: 2222,
   port: 3000,
-  lifeBeltPort: 5000,
+  lifeBeltPort: 5000
 };
 /**
  * streaming & socket
@@ -33,7 +33,7 @@ const streamDeviceDomain = "192.168.0.150";
 // const streamDeviceDomain = "192.168.10.1";
 export const streamingDevice = {
   ip: streamDeviceDomain,
-  url: `rtsp://${streamDeviceDomain}:8160/`,
+  url: `rtsp://${streamDeviceDomain}:8160/`
   // url: `udp://${streamDeviceDomain}:11111`,
   // url: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
 };
@@ -45,7 +45,7 @@ export const Screens = {
   login: "login",
   home: "home",
   stream: "stream",
-  upload: "upload",
+  upload: "upload"
 };
 /**
  * files & directories names
@@ -58,7 +58,7 @@ export const FN = {
   eventPrefix: "event",
   //
   events: "emergencyEvents.txt",
-  appErrors: "appErrors.txt",
+  appErrors: "appErrors.txt"
 };
 /**
  * async storage keys
@@ -69,7 +69,7 @@ export const AS = {
   lifeGuardImage: "@lifeGuardImage",
   beachId: "@beachId",
   uploadStatus: "@uploadStatus",
-  emergencyEvent: "@emergencyEvent",
+  emergencyEvent: "@emergencyEvent"
 };
 /**
  * camera details
@@ -90,18 +90,22 @@ export const piCameraInfo = {
   xDimensions: 3.6, //mm
   yDimensions: 2.7, //mm
   horizontalDegree: { ...lenFormula(3.6, 3.6) },
-  verticalDegree: { ...lenFormula(3.6, 2.7) },
+  verticalDegree: { ...lenFormula(3.6, 2.7) }
+};
+
+export const sleep = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms));
 };
 
 export const StyleConsts = {
   logo: {
     width: 490 / 6,
-    height: 367 / 6,
+    height: 367 / 6
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 50,
+    width: 60,
+    height: 60,
+    borderRadius: 50
   },
   backgroundContainerStyle: {
     display: "flex",
@@ -109,10 +113,25 @@ export const StyleConsts = {
     justifyContent: "center",
     alignItems: "center",
     flex: 1,
-    backgroundPosition: "cover",
+    backgroundPosition: "cover"
   },
   modal: {
     width: 500,
-    height: 400,
+    height: 400
   },
+  header: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: 100,
+    paddingLeft: 15,
+    paddingRight: 15,
+    paddingTop: 10,
+    paddingBottom: 10
+  }
 };

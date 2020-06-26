@@ -9,7 +9,7 @@ import {
   ImageBackground,
   TouchableWithoutFeedback,
   Image,
-  ScrollView,
+  ScrollView
 } from "react-native";
 import { Provider, Modal, Button } from "@ant-design/react-native";
 import AsyncStorage from "@react-native-community/async-storage";
@@ -19,9 +19,10 @@ import { forceUpload, AS, Screens, StyleConsts } from "../Assets/consts";
 import usePrepareUpload from "../Hooks/usePrepareUpload";
 import useUploadEvents from "../Hooks/useUploadEvents";
 import logger from "../logger";
+import Avatar from "../Components/Avatar";
 const caller = "UploadScreen.js";
 
-const UploadScreen = (props) => {
+const UploadScreen = props => {
   const [requirePrepare, setRequirePrepare] = useState(true);
   const [uploadReady, setUploadReady] = useState(false);
   const [
@@ -31,15 +32,14 @@ const UploadScreen = (props) => {
     videoStat,
     tokenIDs,
     firstTeleTime,
-    loggerURL,
+    loggerURL
   ] = usePrepareUpload(requirePrepare, props.userEvents);
   const [handleEvents, setHandleEvents] = useState(false);
-  const [doneEvents, setDoneEvents] = useState([]);
   const [
     currentEvent,
     workStatus,
     loopFinished,
-    failedEvents,
+    failedEvents
   ] = useUploadEvents(
     isPreparing,
     handleEvents,
@@ -51,6 +51,7 @@ const UploadScreen = (props) => {
   );
 
   const [showExitModal, setExitModal] = useState(false);
+  const [closeErrorModal, setCloseErrorModal] = useState(false);
   const shouldShowCurrentEvent = currentEvent.index >= 0 && !loopFinished;
 
   const deleteThenExit = () => {
@@ -67,7 +68,7 @@ const UploadScreen = (props) => {
           `RNFS.unlink(${RNFS.ExternalDirectoryPath})`
         );
       })
-      .catch((e) => {
+      .catch(e => {
         logger(
           "ERROR",
           e.message || e,
@@ -85,7 +86,7 @@ const UploadScreen = (props) => {
           "RNFS.mkdir(RNFS.ExternalDirectoryPath)"
         );
       })
-      .catch((e) => {
+      .catch(e => {
         logger(
           "ERROR",
           e.message || e,
@@ -115,7 +116,7 @@ const UploadScreen = (props) => {
     }
   };
 
-  const getEventStatusIcon = (status) => {
+  const getEventStatusIcon = status => {
     let source;
     if (status === "working")
       return (source = require("../Assets/Icons/uploaded_in_progress.gif"));
@@ -137,12 +138,18 @@ const UploadScreen = (props) => {
           transparent={true}
           closable={true}
           visible={showExitModal}
-          title="Are you sure?"
-          onClose={() => setExitModal(false)}
+          onClose={() => {
+            setExitModal(false);
+            setCloseErrorModal(false);
+          }}
+          style={styles.modal}
         >
-          <View style={{ paddingVertical: 20 }}>
+          <View>
+            <Text style={{ fontSize: 20, alignSelf: "center" }}>
+              Are you sure?
+            </Text>
             <Text
-              style={{ fontSize: 16, alignSelf: "center", marginBottom: 25 }}
+              style={{ fontSize: 20, alignSelf: "center", marginBottom: 25 }}
             >
               Your data will be permanently lost
             </Text>
@@ -154,64 +161,67 @@ const UploadScreen = (props) => {
             </Button>
           </View>
         </Modal>
-        <View style={styles.header}>
+        <View
+          style={[
+            StyleConsts.header,
+            { backgroundColor: "rgba(66, 66, 66, 0.3)" }
+          ]}
+        >
           <TouchableWithoutFeedback
             onPress={handleLogoPress}
             style={{ zIndex: 100 }}
           >
             <Image
               source={require("../Assets/Icons/logo.png")}
-              style={StyleConsts.logo}
+              style={[StyleConsts.logo, { marginLeft: 25 }]}
             />
           </TouchableWithoutFeedback>
-          <Image
-            source={require("../Assets/StaticLifeGuards/man.jpg")}
-            style={StyleConsts.avatar}
-          />
+          <View style={{ marginRight: 30 }}>
+            <Avatar />
+          </View>
         </View>
         {!uploadReady ? (
-          <View
-            style={{
-              display: "flex",
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              padding: 20,
-              borderRadius: 4,
+          <Modal
+            style={styles.modal}
+            animationType="fade"
+            transparent={true}
+            visible={!uploadReady && !closeErrorModal}
+            closable={!isPreparing && prepError}
+            onClose={() => {
+              setCloseErrorModal(true);
+              handleLogoPress();
             }}
           >
-            <Text style={{ color: "#ffffff", fontSize: 40, paddingBottom: 10 }}>
+            <Text
+              style={{
+                fontSize: 20,
+                textAlign: "center",
+                marginBottom: 30,
+                marginTop: 10
+              }}
+            >
               {isPreparing
                 ? "Preparing Files to upload"
                 : prepError
                 ? "Error searching files to upload"
                 : "Start events uploading"}
             </Text>
-            {isPreparing && <ActivityIndicator size="large" color="#0077be" />}
-            <Text
-              style={{
-                color: "#ffffff",
-                fontSize: 25,
-                alignSelf: "center",
-                paddingBottom: 10,
-              }}
-            />
-            {!isPreparing && (
+            {isPreparing ? (
+              <ActivityIndicator size="large" color="#000" />
+            ) : (
               <Button style={styles.modalButton} onPress={handleStartUploading}>
-                <Text style={{ color: "#fff" }}>
+                <Text style={{ fontSize: 18 }}>
                   {prepError ? "Try Again" : "Continue"}
                 </Text>
               </Button>
             )}
-          </View>
+          </Modal>
         ) : (
           <View style={styles.uploadEventsContainer}>
-            <ScrollView
-              persistentScrollbar={false}
-              style={styles.eventsList}
-              contentContainerStyle={styles.eventsListContent}
-            >
+            <ScrollView persistentScrollbar={false} style={styles.eventsList}>
               <Text style={styles.eventsListHeading}>Events list</Text>
               <View style={styles.eventItemsList}>
-                {eventsStatus.map((event) => {
+                {eventsStatus.map(event => {
                   if (event.status !== "pending") {
                     return (
                       <View style={styles.listItemEvent} key={event.startTime}>
@@ -262,11 +272,11 @@ const UploadScreen = (props) => {
                       fontSize: 35,
                       alignSelf: "center",
                       top: "40%",
-                      fontWeight: "bold",
+                      fontWeight: "bold"
                     }}
                   >
                     Uploaded{" "}
-                    {eventsStatus.filter((event) => event.status !== "failed")
+                    {eventsStatus.filter(event => event.status !== "failed")
                       .length - failedEvents.length}{" "}
                     events successfully
                   </Text>
@@ -281,28 +291,12 @@ const UploadScreen = (props) => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    position: "absolute",
-    backgroundColor: "rgba(66, 66, 66, 0.3)",
-    top: 0,
-    left: 0,
-    zIndex: 100,
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingTop: 5,
-    paddingBottom: 5,
-  },
   card: {
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 4,
     height: 200,
     width: 180,
-    alignItems: "center",
+    alignItems: "center"
   },
   uploadEventsContainer: {
     display: "flex",
@@ -312,7 +306,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
     width: "95%",
-    height: "80%",
+    height: "80%"
   },
   eventsList: {
     display: "flex",
@@ -320,11 +314,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     height: "100%",
     marginRight: 5,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-  },
-  eventsListContent: {
-    // justifyContent: "center",
-    // alignItems: "center"
+    backgroundColor: "rgba(255, 255, 255, 0.2)"
   },
   eventContainer: {
     display: "flex",
@@ -333,7 +323,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     height: "100%",
-    marginLeft: 5,
+    marginLeft: 5
   },
   eventHeading: {
     color: "#fff",
@@ -341,34 +331,34 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 30,
     borderBottomColor: "#fff",
-    borderBottomWidth: 1,
+    borderBottomWidth: 1
   },
   singleEventInProgress: {
     marginTop: 50,
     display: "flex",
-    alignItems: "center",
+    alignItems: "center"
   },
   infoHeading: {
     color: "#ffffff",
     fontSize: 25,
     fontWeight: "bold",
-    marginBottom: 3,
+    marginBottom: 3
   },
   infoContent: {
     color: "#ffffff",
     fontSize: 20,
-    marginBottom: 20,
+    marginBottom: 20
   },
   contentView: { display: "flex", alignItems: "center" },
   listItemEvent: {
     display: "flex",
     flexDirection: "row",
     marginBottom: 25,
-    fontSize: 20,
+    fontSize: 20
   },
   eventItemsList: {
     marginLeft: 60,
-    marginTop: 15,
+    marginTop: 15
   },
   eventsListHeading: {
     color: "#ffffff",
@@ -376,25 +366,29 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 15,
     marginLeft: 50,
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   eventText: {
     color: "#ffffff",
     fontSize: 20,
-    marginLeft: 10,
+    marginLeft: 10
   },
   modalButton: {
     backgroundColor: "transparent",
     borderRadius: 30,
     width: 200,
-    alignSelf: "center",
+    alignSelf: "center"
   },
+  modal: {
+    width: 450,
+    height: 180,
+  }
 });
 
 UploadScreen.propTypes = {
   setScreen: PropTypes.func.isRequired,
   setUserEvents: PropTypes.func.isRequired,
-  userEvents: PropTypes.array,
+  userEvents: PropTypes.array
 };
 
 export default UploadScreen;

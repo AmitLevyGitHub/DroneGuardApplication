@@ -28,6 +28,7 @@ import useSaveStream from "../Hooks/useSaveStream";
 import useScaleStream from "../Hooks/useScaleStream";
 import useNavigateDrone from "../Hooks/useNavigateDrone";
 import logger from "../logger";
+import Avatar from "../Components/Avatar";
 const caller = "StreamScreen.js";
 
 const StreamScreen = props => {
@@ -40,15 +41,14 @@ const StreamScreen = props => {
   const [scaledWidth, scaledHeight] = useScaleStream(streamWidth, streamHeight);
   const [audioRef, setAudioRef] = useState(null);
   const [droneOption, setDroneOption] = useState("takeoff");
+  const [takeOffDisabled, setTakeOffDisabled] = useState(false);
   const [
     setAxisX,
     setAxisY,
     setNavCommand,
     isNavWorking,
     navModalVisible,
-    setNavModalVisible,
-    navModalTitle,
-    navStatus
+    setNavModalVisible
   ] = useNavigateDrone(socket, {
     scaledWidth,
     scaledHeight,
@@ -89,34 +89,37 @@ const StreamScreen = props => {
   const takoffLandIcon =
     droneOption === "takeoff"
       ? require("../Assets/Icons/takeoff_icon.png")
-      : require("../Assets/Icons/landing_drone_White.png");
+      : droneOption === "backHome"
+      ? require("../Assets/Icons/back_home_icon.png")
+      : require("../Assets/Icons/land_icon.png");
 
   const batteryImageSource = require("../Assets/Icons/battery.png");
   const logoImageSource = require("../Assets/Icons/logo.png");
-  const lifeGuardAvatar = require("../Assets/StaticLifeGuards/man.jpg");
   const lifeVestIcon = releasedLifeVest
     ? require("../Assets/Icons/close_lifebelt.png")
     : require("../Assets/Icons/release_lifebelt.png");
   const pttIcon = require("../Assets/Icons/ptt_icon.png");
 
   const handlePressIn = () => {
-    console.log("Press In");
     audioRef.start();
   };
 
   const handlePressOut = () => {
-    console.log("Press Out");
     audioRef.stop();
   };
 
   const handleTakeOffLandToggle = () => {
     if (droneOption === "takeoff") {
       setNavCommand("takeoff");
-      setDroneOption("land");
+      setDroneOption("backHome");
       logger("OPERATION", "takeoff", caller);
+    } else if (droneOption === "backHome") {
+      setDroneOption("land");
+      setNavCommand("backHome");
     } else {
       setNavCommand("land");
       setDroneOption("takeoff");
+      setTakeOffDisabled(true);
       logger("OPERATION", "land", caller);
     }
   };
@@ -171,24 +174,23 @@ const StreamScreen = props => {
   return (
     <Provider>
       <View style={styles.container}>
-        <ConnectModal socket={socket} setHasStarted={setHasStarted} />
+        {/*<ConnectModal socket={socket} setHasStarted={setHasStarted} />*/}
         <Modal
           animationType="fade"
           transparent={true}
           visible={navModalVisible}
+          closable={true}
+          style={styles.modal}
+          onClose={() => setNavModalVisible(false)}
         >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{navModalTitle}</Text>
-                <TouchableOpacity onPress={() => setNavModalVisible(false)}>
-                  <Text style={styles.closeButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.modalStatus}>{navStatus}</Text>
-              {isNavWorking && (
-                <ActivityIndicator size="large" color="#0077be" />
-              )}
+          <View style={styles.connectModalContent}>
+            <View style={styles.textAndButton}>
+              <Text
+                style={{ fontSize: 25, marginBottom: 25, textAlign: "center" }}
+              >
+                Navigating...
+              </Text>
+              <ActivityIndicator size="large" color="#000" />
             </View>
           </View>
         </Modal>
@@ -242,7 +244,12 @@ const StreamScreen = props => {
             renderType="SURFACEVIEW"
           />
         </TouchableWithoutFeedback>
-        <View style={styles.header}>
+        <View
+          style={[
+            StyleConsts.header,
+            { backgroundColor: "rgba(66, 66, 66, 0.3)" }
+          ]}
+        >
           <View style={styles.logoContainer}>
             <TouchableWithoutFeedback
               onPress={handleLogoPress}
@@ -260,48 +267,60 @@ const StreamScreen = props => {
               {gpsTele.altitude ? parseFloat(gpsTele.altitude / 100) : 0}m
             </Text>
           </View>
-          <View style={styles.buttonsPanel}>
-            <TouchableOpacity style={styles.btn} onPress={handleEventToggle}>
-              <View
-                style={[
-                  styles.eventButton,
-                  {
-                    borderColor: eventStartTime === -1 ? "white" : "red",
-                    backgroundColor: eventStartTime === -1 ? "white" : "red"
-                  }
-                ]}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.btn}
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
-            >
-              <Image
-                source={pttIcon}
-                style={{
-                  width: 25,
-                  height: 30
-                }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btn} onPress={handleRelease}>
-              <Image
-                source={lifeVestIcon}
-                style={{
-                  width: 25,
-                  height: 45,
-                  marginRight: releasedLifeVest ? 3 : 4
-                }}
-              />
-            </TouchableOpacity>
-            <Image source={lifeGuardAvatar} style={StyleConsts.avatar} />
+          <View style={styles.avatarContainer}>
+            <Avatar style={StyleConsts.avatar} />
           </View>
         </View>
         <JoystickRight setNavCommand={setNavCommand} />
         <JoystickLeft setNavCommand={setNavCommand} />
-        <TouchableWithoutFeedback onPress={handleTakeOffLandToggle}>
-          <Image source={takoffLandIcon} style={styles.landTakeoffButtons} />
+        <View style={styles.buttonsPanel}>
+          <TouchableOpacity
+            style={styles.btn}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+          >
+            <Image
+              source={pttIcon}
+              style={{
+                width: 30,
+                height: 35
+              }}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btn} onPress={handleEventToggle}>
+            <View
+              style={[
+                styles.eventButton,
+                {
+                  borderColor: eventStartTime === -1 ? "white" : "red",
+                  backgroundColor: eventStartTime === -1 ? "white" : "red"
+                }
+              ]}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btn} onPress={handleRelease}>
+            <Image
+              source={lifeVestIcon}
+              style={{
+                width: 30,
+                height: 50,
+                marginRight: releasedLifeVest ? 3 : 4
+              }}
+            />
+          </TouchableOpacity>
+        </View>
+        <TouchableWithoutFeedback
+          onPress={handleTakeOffLandToggle}
+          disabled={takeOffDisabled}
+        >
+          <Image
+            source={takoffLandIcon}
+            style={[
+              styles.landTakeoffButtons,
+              { marginBottom: droneOption === "backHome" ? 10 : 0 },
+              { opacity: takeOffDisabled ? 0.5 : 1 }
+            ]}
+          />
         </TouchableWithoutFeedback>
       </View>
       <NodeCameraView
@@ -339,22 +358,6 @@ const styles = StyleSheet.create({
   activityIndicator: {
     transform: [{ scale: 2 }],
     marginTop: 20
-  },
-  header: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    backgroundColor: "rgba(66, 66, 66, 0.3)",
-    zIndex: 100,
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingTop: 5,
-    paddingBottom: 5
   },
   telemetryBox: {
     zIndex: 100,
@@ -447,8 +450,8 @@ const styles = StyleSheet.create({
     borderRadius: 50
   },
   btn: {
-    width: 50,
-    height: 50,
+    width: 70,
+    height: 70,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
@@ -457,13 +460,13 @@ const styles = StyleSheet.create({
     borderRadius: 50
   },
   landTakeoffButtons: {
-    width: 512 / 4,
-    height: 512 / 4,
+    width: 512 / 5,
+    height: 512 / 5,
     zIndex: 100,
     position: "absolute",
     left: "50%",
-    transform: [{ translateX: -50 }],
-    bottom: 0
+    transform: [{ translateX: -35 }],
+    bottom: 20
   },
   nodePlayerView: {
     position: "absolute",
@@ -481,18 +484,26 @@ const styles = StyleSheet.create({
   batteryIcon: {
     width: 13 / 1.1,
     height: 24 / 1.1,
-    marginLeft: -6,
+    marginLeft: -4,
     marginBottom: 3
   },
   wifiIcon: { width: 920 / 14, height: 392 / 14 },
-  buttonsPanel: {
-    display: "flex",
-    flexDirection: "row",
-    width: 250,
-    justifyContent: "space-between"
+  avatarContainer: {
+    width: 90
   },
   logoContainer: {
-    width: 250
+    width: 90,
+    marginLeft: 25
+  },
+  buttonsPanel: {
+    display: "flex",
+    justifyContent: "space-between",
+    height: 280,
+    width: 70,
+    position: "absolute",
+    right: 40,
+    top: 100,
+    zIndex: 999
   },
   releaseModal: {
     width: StyleConsts.modal.width,

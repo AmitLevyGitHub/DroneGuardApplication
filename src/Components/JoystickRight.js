@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     borderRadius: 300,
     justifyContent: "space-between",
     position: "absolute",
-    right: 20,
-    bottom: 10,
+    right: 40,
+    bottom: 40,
     zIndex: 999
   },
   btn: {

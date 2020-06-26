@@ -84,7 +84,7 @@ const ConnectModal = props => {
         setIsStartWorking(false);
         setStartButtonTitle("Try Again");
         setStartStatus(
-          `No response received from server after ${errorTimeOutSeconds}`
+          `No response received\n from server after ${errorTimeOutSeconds} sec`
         );
         setRequestStart(false);
       }

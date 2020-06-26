@@ -7,9 +7,9 @@ import {
   View
 } from "react-native";
 import { Modal } from "@ant-design/react-native";
-import {AS, StyleConsts} from "../Assets/consts";
+import { AS, StyleConsts } from "../Assets/consts";
 import AsyncStorage from "@react-native-community/async-storage";
-import logger from "..//logger";
+import logger from "../logger";
 const caller = "BeachesModal.js";
 
 const BeachesModal = ({ onChooseBeach }) => {
@@ -30,12 +30,15 @@ const BeachesModal = ({ onChooseBeach }) => {
       })
         .then(async response => {
           if (response.status === 200) {
-            const beachesResponse = await response.json();
+            let beachesResponse = await response.json();
             logger(
               "DEV",
               `number of beaches returned = ${beachesResponse.length}`,
               caller
             );
+            beachesResponse = beachesResponse.map(beach => {
+              return { ...beach, label: beach.name };
+            });
             setBeaches(beachesResponse);
           } else {
             throw new Error("Failed to fetch beaches");
@@ -54,26 +57,37 @@ const BeachesModal = ({ onChooseBeach }) => {
       transparent={true}
       closable={false}
       visible={true}
-      title="Choose Beach"
       style={styles.modal}
     >
-      <ScrollView
-        style={styles.beaches}
-        contentContainerStyle={styles.beachesContent}
-      >
+      <View style={styles.beaches}>
         {error ? (
           <View>
-            <Text>Failed to fetch beaches</Text> //TODO TAKE CARE
+            <Text>Failed to fetch beaches</Text>
           </View>
         ) : (
-          beaches &&
-          beaches.map((beach, i) => (
-            <TouchableOpacity onPress={() => onChooseBeach(beach)} key={i}>
-              <Text style={styles.beach}>{beach.name}</Text>
-            </TouchableOpacity>
-          ))
+          [
+            <Text style={styles.title}>
+              Choose your working beach for today
+            </Text>,
+            beaches && (
+              <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.beachesContent}
+                persistentScrollbar={true}
+              >
+                {beaches.map((beach, i) => (
+                  <TouchableOpacity
+                    onPress={() => onChooseBeach(beach)}
+                    key={i}
+                  >
+                    <Text style={styles.beach}>{beach.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )
+          ]
         )}
-      </ScrollView>
+      </View>
     </Modal>
   );
 };
@@ -85,18 +99,28 @@ const styles = StyleSheet.create({
   },
   beaches: {
     width: "100%",
-    height: "90%",
+    height: 350,
     display: "flex",
-    marginTop: 10,
     marginBottom: 10
   },
   beachesContent: {
     alignItems: "center"
   },
   beach: {
-    fontSize: 25,
+    fontSize: 18,
     marginTop: 10,
     marginBottom: 10
+  },
+  title: {
+    fontSize: 22,
+    marginBottom: 10,
+    alignSelf: "center",
+    fontWeight: "bold"
+  },
+  scrollView: {
+    alignSelf: "center",
+    width: "90%",
+    marginTop: 10
   }
 });
 

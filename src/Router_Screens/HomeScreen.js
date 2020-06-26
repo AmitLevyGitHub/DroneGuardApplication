@@ -54,14 +54,14 @@ const HomeScreen = props => {
       source={require("../Assets/Icons/home_bg.jpg")}
       style={StyleConsts.backgroundContainerStyle}
     >
-      <View style={styles.header}>
+      <View style={StyleConsts.header}>
         <TouchableWithoutFeedback
           onPress={onLogoPress}
-          style={styles.zIndexStyle}
+          style={[styles.zIndexStyle]}
         >
           <Image
             source={require("../Assets/Icons/logo.png")}
-            style={StyleConsts.logo}
+            style={[StyleConsts.logo, { marginLeft: 25 }]}
           />
         </TouchableWithoutFeedback>
         <View style={styles.avatarContainer}>
@@ -108,21 +108,6 @@ const HomeScreen = props => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    zIndex: 100,
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingTop: 5,
-    paddingBottom: 5
-  },
   cardsContainer: {
     flexDirection: "row",
     width: "80%",
@@ -132,12 +117,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 4,
     height: 400,
-    width: 380,
-    // justifyContent: "center",
+    width: 330,
     alignItems: "center"
   },
   text: {
-    fontSize: 30,
+    fontSize: 25,
     textAlign: "center",
     color: "white"
   },
@@ -161,9 +145,10 @@ const styles = StyleSheet.create({
   avatarContainer: {
     display: "flex",
     flexDirection: "row",
-    width: 170,
+    width: 180,
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    marginRight: 30
   },
   logoutText: {
     color: "#fff",
