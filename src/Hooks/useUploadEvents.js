@@ -16,8 +16,7 @@ export default function useUploadEvents(
   eventsStatus,
   videoStat,
   tokenIDs,
-  firstTeleTime,
-  loggerURL
+  firstTeleTime
 ) {
   const [currentEvent, setCurrentEvent] = React.useState({ index: -1 });
   const [workStatus, setWorkStatus] = React.useState("creating directory");
@@ -55,8 +54,7 @@ export default function useUploadEvents(
             event,
             setWorkStatus,
             tokenIDs,
-            firstTeleTime,
-            loggerURL
+            firstTeleTime
           );
           event.status = "done";
           logger(
@@ -114,8 +112,7 @@ function handleEvent(
   event,
   setWorkStatus,
   tokenIDs,
-  firstTeleTime,
-  loggerURL
+  firstTeleTime
 ) {
   return new Promise(async (resolve, reject) => {
     let step = null;
@@ -168,7 +165,6 @@ function handleEvent(
               endTime: event.endTime,
               lifeGuardId,
               beachId,
-              loggerURL,
             }),
           }
         );
@@ -200,9 +196,16 @@ function handleEvent(
         const eventVideoName = `${FN.eventPrefix}_s${event.startTime}.mp4`;
         const eventVideoPath = event.directoryPath + "/" + eventVideoName;
         const sTime = parseInt((event.startTime - ZERO_time) / 1000);
-        const eTime =
-          parseInt((event.endTime - event.startTime) / 1000) + sTime;
-        const FFMPEGcommand = `-i ${srcVideoPath} -vf trim=${sTime}:${eTime} ${eventVideoPath}`;
+        // const eTime =
+        //   parseInt((event.endTime - event.startTime) / 1000) + sTime;
+        // const endTimeStr = new Date(eTime * 1000).toISOString().substr(11, 8);
+        // const FFMPEGcommand = `-i ${srcVideoPath} -vf trim=${sTime}:${eTime} ${eventVideoPath}`;
+        const duration = parseInt((event.endTime - event.startTime) / 1000);
+        const durationStr = new Date(duration * 1000)
+          .toISOString()
+          .substr(11, 8);
+        const startTimeStr = new Date(sTime * 1000).toISOString().substr(11, 8);
+        const FFMPEGcommand = `-ss ${startTimeStr} -i ${srcVideoPath} -to ${durationStr} -c:v copy ${eventVideoPath}`;
         logger("DEV", FFMPEGcommand, caller, step);
         await RNFFmpeg.execute(FFMPEGcommand);
         logger("DEV", eventVideoPath, caller, step);
@@ -448,7 +451,7 @@ function handleEvent(
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * 3.1 upload telemetry
+     * 4.1 upload telemetry
      */
     if (!event.telemetry.awsURL) {
       step = "uploadTelemetry";
@@ -485,7 +488,7 @@ function handleEvent(
       await updateAsyncStorage(allEvents, event);
     }
     /**
-     * 3.2 update telemetry URL in database
+     * 4.2 update telemetry URL in database
      */
     if (!event.telemetry.updatedDB) {
       step = "updateTelemetryURL";
@@ -516,6 +519,137 @@ function handleEvent(
         setWorkStatus("Error updating telemetry URL in database");
         const eStr = e.hasOwnProperty("message") ? e.message : e;
         const m = `error updating telemetry URL in database: ${eStr}`;
+        logger("ERROR", eStr, caller, step);
+        await updateAsyncStorage(allEvents, event);
+        return reject(m);
+      }
+      await updateAsyncStorage(allEvents, event);
+    }
+    /**
+     * 5.0 trim logger operations
+     */
+    if (!event.logger.fullPath) {
+      step = "trimLoggerOperations";
+      try {
+        setWorkStatus("Trimming logger");
+        //
+        // const srcLoggerFile =
+        //   RNFS.ExternalDirectoryPath + "/" + FN.logger;
+        const srcLoggerFile =
+          RNFS.ExternalDirectoryPath + "/" + "loggerOperations.txt";
+        let ALL_logger = null;
+        let dataRead = "";
+        logger("DEV", `RNFS.readFile(${srcLoggerFile})`, caller, step);
+        dataRead = await RNFS.readFile(srcLoggerFile);
+        dataRead = dataRead.substring(0, dataRead.length - 1);
+        dataRead = "[" + dataRead + "]";
+        ALL_logger = JSON.parse(dataRead);
+        logger("DUMMY", `logger count = ${ALL_logger.length}`, caller, step);
+        //
+        let cutLogger = "";
+        console.log(
+          `eventStartTime = ${event.startTime}  --  eventEndTime = ${event.endTime}`
+        );
+        for (let i = 0; i < ALL_logger.length; i++) {
+          console.log(JSON.stringify(ALL_logger[i], null, 2));
+          if (
+            ALL_logger[i].level == "OPERATION" &&
+            ALL_logger[i].time >= event.startTime &&
+            ALL_logger[i].time <= event.endTime
+          ) {
+            console.log("inside if");
+            cutLogger += JSON.stringify(ALL_logger[i]);
+            cutLogger += ",";
+          }
+        }
+        cutLogger = cutLogger.substring(0, cutLogger.length - 1);
+        cutLogger = "[" + cutLogger + "]";
+        //
+        const eventLoggerName = `${FN.eventPrefix}Logger_s${event.startTime}.json`;
+        const eventLoggerPath = event.directoryPath + "/" + eventLoggerName;
+        logger("DEV", `RNFS.writeFile(${eventLoggerPath}, )`, caller, step);
+        await RNFS.writeFile(eventLoggerPath, cutLogger);
+        event.logger.fileName = eventLoggerName;
+        event.logger.fullPath = eventLoggerPath;
+      } catch (e) {
+        setWorkStatus("Error trimming logger operations");
+        const eStr = e.hasOwnProperty("message") ? e.message : e;
+        const m = `error trimming logger operations: ${eStr}`;
+        logger("ERROR", eStr, caller, step);
+        await updateAsyncStorage(allEvents, event);
+        return reject(m);
+      }
+      await updateAsyncStorage(allEvents, event);
+    }
+    /**
+     * 5.1 upload logger operations
+     */
+    if (!event.logger.awsURL) {
+      step = "uploadLoggerOperations";
+      setWorkStatus("Uploading logger operations");
+      const file = {
+        uri: `file://${event.logger.fullPath}`,
+        name: event.logger.fileName,
+        type: "application/json",
+      };
+      const options = {
+        keyPrefix: `${event.directoryName}/`,
+        bucket: "drone-guard-videos",
+        region: "eu-west-1",
+        accessKey: AWSkeys.accessKey,
+        secretKey: AWSkeys.secretKey,
+        successActionStatus: 201,
+      };
+      try {
+        const res = await RNS3.put(file, options);
+        if (res.status === 201) {
+          event.logger.awsURL = res.body.postResponse.location;
+          logger("DEV", res.body.postResponse.location, caller, step);
+        } else {
+          throw new Error(`status code = ${res.status}`);
+        }
+      } catch (e) {
+        setWorkStatus("Error uploading logger operations");
+        const eStr = e.hasOwnProperty("text") ? e.text : e;
+        const m = `error uploading logger operations: ${eStr}`;
+        logger("ERROR", eStr, caller, step);
+        await updateAsyncStorage(allEvents, event);
+        return reject(m);
+      }
+      await updateAsyncStorage(allEvents, event);
+    }
+    /**
+     * 5.2 update logger operations URL in database
+     */
+    if (!event.logger.updatedDB) {
+      step = "updateLoggerOperationsURL";
+      setWorkStatus("Updating logger operations URL in database");
+      try {
+        let response = await fetch(
+          "https://drone-guard-debriefing-server.herokuapp.com/updateEvent",
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              authorization: "Bearer " + token,
+            },
+            body: JSON.stringify({
+              eventId: event.ID,
+              loggerURL: event.logger.awsURL,
+            }),
+          }
+        );
+        if (response.status === 200) {
+          event.logger.updatedDB = true;
+          logger("DEV", "logger operations URL updated in DB", caller, step);
+        } else {
+          throw new Error(`status code = ${response.status}`);
+        }
+      } catch (e) {
+        setWorkStatus("Error updating logger operations URL in database");
+        const eStr = e.hasOwnProperty("message") ? e.message : e;
+        const m = `error updating logger operations  URL in database: ${eStr}`;
         logger("ERROR", eStr, caller, step);
         await updateAsyncStorage(allEvents, event);
         return reject(m);

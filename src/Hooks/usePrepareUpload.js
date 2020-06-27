@@ -2,8 +2,6 @@ import React from "react";
 import AsyncStorage from "@react-native-community/async-storage";
 import RNFS from "react-native-fs";
 import { RNFFprobe } from "react-native-ffmpeg";
-import { RNS3 } from "react-native-aws3";
-import { AWSkeys } from "../Assets/secrets";
 import { AS, FN, navConsts } from "../Assets/consts";
 import logger from "../logger";
 const caller = "usePrepareUpload.js";
@@ -14,7 +12,6 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
   const [videoStat, setVideoStat] = React.useState(null);
   const [tokenIDs, setTokenIDs] = React.useState(null);
   const [firstTeleTime, setFirstTeleTime] = React.useState(0);
-  const [loggerURL, setLoggerURL] = React.useState(null);
   React.useEffect(() => {
     let isSubscribed = true;
     (async () => {
@@ -106,69 +103,6 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         setPrepError(m);
       }
       /**
-       * save logger as json
-       */
-      let loggerPath = null;
-      let loggerName = null;
-      try {
-        const srcLoggerFile = RNFS.ExternalDirectoryPath + "/" + FN.logger;
-        let loggerRead = "";
-        logger(
-          "DEV",
-          `RNFS.readFile(${srcLoggerFile})`,
-          caller,
-          "save as logger.json"
-        );
-        loggerRead = await RNFS.readFile(srcLoggerFile);
-        loggerRead = loggerRead.substring(0, loggerRead.length - 1);
-        loggerRead = "[" + loggerRead + "]";
-        const loggerJSON_name = `logger_s${Date.now()}.json`;
-        const loggerJSON_path =
-          RNFS.ExternalDirectoryPath + "/" + loggerJSON_name;
-        logger("DEV", `RNFS.writeFile(${loggerJSON_path}, )`, caller);
-        await RNFS.writeFile(loggerJSON_path, loggerRead);
-        loggerPath = loggerJSON_path;
-        loggerName = loggerJSON_name;
-      } catch (e) {
-        const m = e.hasOwnProperty("message") ? e.message : e;
-        logger("WARNING", m, caller, "save as logger.json");
-        setPrepError(m);
-      }
-      /**
-       * upload logger to AWS
-       */
-      try {
-        const file = {
-          uri: `file://${loggerPath}`,
-          name: loggerName,
-          type: "application/json",
-        };
-        const options = {
-          keyPrefix: `loggers/`,
-          bucket: "drone-guard-videos",
-          region: "eu-west-1",
-          accessKey: AWSkeys.accessKey,
-          secretKey: AWSkeys.secretKey,
-          successActionStatus: 201,
-        };
-        const res = await RNS3.put(file, options);
-        if (res.status === 201) {
-          logger(
-            "DEV",
-            res.body.postResponse.location,
-            caller,
-            "upload logger"
-          );
-          setLoggerURL(res.body.postResponse.location);
-        } else {
-          throw new Error(`status code = ${res.status}`);
-        }
-      } catch (e) {
-        const m = e.hasOwnProperty("text") ? e.text : e;
-        logger("ERROR", m, caller, "upload logger");
-        setPrepError(m);
-      }
-      /**
        * read uploadStatus (emergency events list) from async storage
        * or create it from emergency events file, while respecting user events
        */
@@ -198,6 +132,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
       //if first time visiting upload screen create list from all telemetry file
       logger("DUMMY", "creating emergency events list from file", caller);
       const { emergencyHeight } = navConsts;
+      logger("DUMMY", `emergency height = ${emergencyHeight}`, caller);
       let didTakeoff = false;
       let eventStartTime = -1;
       let emergencyEventsDetected = [];
@@ -265,6 +200,12 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
           awsURL: null,
           updatedDB: false,
         },
+        logger: {
+          fileName: null,
+          fullPath: null,
+          awsURL: null,
+          updatedDB: false,
+        },
       }));
       setEventsStatus(t);
       try {
@@ -294,6 +235,5 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
     videoStat,
     tokenIDs,
     firstTeleTime,
-    loggerURL,
   ];
 }

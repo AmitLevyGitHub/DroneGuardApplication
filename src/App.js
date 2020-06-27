@@ -19,8 +19,8 @@ const App = () => {
   }, []);
   return (
     <React.Fragment>
-      <StatusBar hidden={true}/>
-        <Router />
+      <StatusBar hidden={true} />
+      <Router />
     </React.Fragment>
   );
 };
