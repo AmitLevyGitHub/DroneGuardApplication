@@ -46,7 +46,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
       setTokenIDs({
         token,
         lifeGuardId,
-        beachId,
+        beachId
       });
       /**
        * read video stat
@@ -81,7 +81,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         startTime: vidStartTime,
         endTime: vidStartTime + vidDuration,
         duration: vidDuration,
-        startTimeInFile: vidStartTimeInFile,
+        startTimeInFile: vidStartTimeInFile
       });
       /**
        * first telemetry time
@@ -159,7 +159,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
             );
             emergencyEventsDetected.push({
               startTime: eventStartTime,
-              endTime: currTele.time,
+              endTime: currTele.time
             });
             eventStartTime = -1;
           }
@@ -186,13 +186,13 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
           fileName: null,
           fullPath: null,
           awsURL: null,
-          updatedDB: false,
+          updatedDB: false
         },
         thumbnail: {
           fileName: null,
           fullPath: null,
           awsURL: null,
-          updatedDB: false,
+          updatedDB: false
         },
         video: {
           fileName: null,
