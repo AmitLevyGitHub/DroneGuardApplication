@@ -200,7 +200,10 @@ function handleEvent(
         //   parseInt((event.endTime - event.startTime) / 1000) + sTime;
         // const endTimeStr = new Date(eTime * 1000).toISOString().substr(11, 8);
         // const FFMPEGcommand = `-i ${srcVideoPath} -vf trim=${sTime}:${eTime} ${eventVideoPath}`;
-        const duration = parseInt((event.endTime - event.startTime) / 1000);
+        let duration = parseInt(
+          (event.endTime - event.startTime - 1000) / 1000
+        );
+        if (duration <= 0) duration = 1;
         const durationStr = new Date(duration * 1000)
           .toISOString()
           .substr(11, 8);
@@ -551,13 +554,11 @@ function handleEvent(
           `eventStartTime = ${event.startTime}  --  eventEndTime = ${event.endTime}`
         );
         for (let i = 0; i < ALL_logger.length; i++) {
-          console.log(JSON.stringify(ALL_logger[i], null, 2));
           if (
             ALL_logger[i].level == "OPERATION" &&
             ALL_logger[i].time >= event.startTime &&
             ALL_logger[i].time <= event.endTime
           ) {
-            console.log("inside if");
             cutLogger += JSON.stringify(ALL_logger[i]);
             cutLogger += ",";
           }
