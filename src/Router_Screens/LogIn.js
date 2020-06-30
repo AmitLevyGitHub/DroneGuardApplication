@@ -21,6 +21,7 @@ const LogInScreen = props => {
   const [loading, setLoading] = useState(false);
   const [showBeachesModal, setShowBeachesModal] = useState(false);
   const [error, setError] = useState(false);
+  const [inputRef, setInputRef] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -38,17 +39,20 @@ const LogInScreen = props => {
   const onLogin = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://drone-guard-debriefing-server.herokuapp.com/login", {
-        method: "POST",
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: username,
-          password: password
-        })
-      });
+      const response = await fetch(
+        "https://drone-guard-debriefing-server.herokuapp.com/login",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: username,
+            password: password
+          })
+        }
+      );
       const { status, message } = response;
       const loginResponse = await response.json();
       if (status === 200) {
@@ -109,6 +113,8 @@ const LogInScreen = props => {
               onChangeText={t => setUsername(t)}
               style={styles.input}
               keyboardType="email-address"
+              returnKeyType="next"
+              onSubmitEditing={() => inputRef.focus()}
             />
             <TextInput
               secureTextEntry={true}
@@ -118,6 +124,7 @@ const LogInScreen = props => {
               autoCompleteType="password"
               onChangeText={t => setPassword(t)}
               style={styles.input}
+              ref={input => setInputRef(input)}
             />
             {error && (
               <View style={styles.errorContainer}>
@@ -148,9 +155,10 @@ const styles = StyleSheet.create({
     borderBottomColor: "white",
     borderStyle: "solid",
     marginTop: 15,
-    fontSize: 12,
+    fontSize: 15,
     paddingLeft: 2,
-    paddingBottom: 2
+    paddingBottom: 2,
+    color: "white"
   },
   loginButton: {
     borderWidth: 1,

@@ -326,16 +326,8 @@ const StreamScreen = props => {
       <NodeCameraView
         style={{ height: 0, width: 0 }}
         ref={vb => setAudioRef(vb)}
-        outputUrl={"rtmp://10.100.102.4:1935/live/audio"}
-        camera={{ cameraId: 0, cameraFrontMirror: false }}
+        outputUrl={"rtmp://192.168.0.150:1935/live/audio"}
         audio={{ bitrate: 16000, profile: 1, samplerate: 44100 }}
-        video={{
-          preset: 12,
-          bitrate: 100000,
-          profile: 1,
-          fps: 15,
-          videoFrontMirror: false
-        }}
         autopreview={true}
       />
     </Provider>
