@@ -6,10 +6,9 @@ import { RNS3 } from "react-native-aws3";
 import { AWSkeys } from "../Assets/secrets";
 import { AS, FN } from "../Assets/consts";
 import logger from "../logger";
-// const thumbnailPos = "00:00:03";
 const thumbnailPos = "00:00:00";
 const caller = "useUploadEvents.js";
-//
+
 export default function useUploadEvents(
   isPreparing,
   handleEvents,
@@ -45,7 +44,7 @@ export default function useUploadEvents(
           }`,
           caller
         );
-        //
+
         try {
           event.status = "working";
           await handleEvent(
@@ -77,10 +76,9 @@ export default function useUploadEvents(
               1} with start time = ${event.startTime}`,
             caller
           );
-          //show message for few more seconds?
         }
       }
-      //
+
       if (!isError) {
         logger("DEV", "finished handling all events without errors", caller);
         setLoopFinished(true);
@@ -97,15 +95,9 @@ export default function useUploadEvents(
     tokenIDs,
     firstTeleTime
   ]);
-  //
   return [currentEvent, workStatus, loopFinished, failedEvents];
 }
-async function handleEventFake() {
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-  await sleep(5000);
-}
+
 function handleEvent(
   allEvents,
   videoStat,
@@ -119,11 +111,9 @@ function handleEvent(
     const beachId = tokenIDs.beachId;
     const lifeGuardId = tokenIDs.lifeGuardId;
     const token = tokenIDs.token;
-    // const ZERO_time = videoStat.startTime;
     const ZERO_time = firstTeleTime;
-    /**
-     * 0.0 create folder on device
-     */
+
+    /* create folder on device*/
     if (!event.directoryPath) {
       step = "createDirectory";
       setWorkStatus("Creating directory on device");
@@ -144,9 +134,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 1.0 create event in DB
-     */
+    /* create event in DB */
     if (!event.ID) {
       step = "createEventInDB";
       setWorkStatus("Creating event in database");
@@ -164,8 +152,8 @@ function handleEvent(
               startTime: event.startTime,
               endTime: event.endTime,
               lifeGuardId,
-              beachId,
-            }),
+              beachId
+            })
           }
         );
         if (response.status === 200) {
@@ -185,9 +173,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 2.0 trim video
-     */
+    /* trim video */
     if (!event.video.fullPath) {
       step = "trimVideo";
       try {
@@ -196,10 +182,6 @@ function handleEvent(
         const eventVideoName = `${FN.eventPrefix}_s${event.startTime}.mp4`;
         const eventVideoPath = event.directoryPath + "/" + eventVideoName;
         const sTime = parseInt((event.startTime - ZERO_time) / 1000);
-        // const eTime =
-        //   parseInt((event.endTime - event.startTime) / 1000) + sTime;
-        // const endTimeStr = new Date(eTime * 1000).toISOString().substr(11, 8);
-        // const FFMPEGcommand = `-i ${srcVideoPath} -vf trim=${sTime}:${eTime} ${eventVideoPath}`;
         let duration = parseInt(
           (event.endTime - event.startTime - 1000) / 1000
         );
@@ -224,9 +206,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 2.1 upload video
-     */
+    /* upload video */
     if (!event.video.awsURL) {
       step = "uploadVideo";
       setWorkStatus("Uploading video to S3 bucket");
@@ -261,9 +241,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 2.2 update video URL in database
-     */
+    /* update video URL in database */
     if (!event.video.updatedDB) {
       step = "updateVideoURL";
       setWorkStatus("Updating video URL in database");
@@ -326,9 +304,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 3.1 upload thumbnail
-     */
+    /* upload thumbnail */
     if (!event.thumbnail.awsURL) {
       step = "uploadThumbnail";
       setWorkStatus("Uploading thumbnail to S3 bucket");
@@ -363,9 +339,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 3.2 update thumbnail URL in database
-     */
+    /* update thumbnail URL in database */
     if (!event.thumbnail.updatedDB) {
       step = "updateThumbnailURL";
       setWorkStatus("Updating thumbnail URL in database");
@@ -401,14 +375,12 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 4.0 trim telemetry
-     */
+    /* trim telemetry */
     if (!event.telemetry.fullPath) {
       step = "trimTelemetry";
       try {
         setWorkStatus("Trimming telemetry");
-        //
+
         const srcTelemetryPath =
           RNFS.ExternalDirectoryPath + "/" + FN.telemetry;
         let ALLtelemetry = null;
@@ -419,7 +391,7 @@ function handleEvent(
         dataRead = "[" + dataRead + "]";
         ALLtelemetry = JSON.parse(dataRead);
         logger("DUMMY", `tele count = ${ALLtelemetry.length}`, caller, step);
-        //
+
         let cutTele = "";
         for (let i = 0; i < ALLtelemetry.length; i++) {
           if (
@@ -435,7 +407,7 @@ function handleEvent(
         }
         cutTele = cutTele.substring(0, cutTele.length - 1);
         cutTele = "[" + cutTele + "]";
-        //
+
         const eventTelemetryName = `${FN.eventPrefix}_s${event.startTime}.json`;
         const eventTelemetryPath =
           event.directoryPath + "/" + eventTelemetryName;
@@ -453,9 +425,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 4.1 upload telemetry
-     */
+    /* upload telemetry */
     if (!event.telemetry.awsURL) {
       step = "uploadTelemetry";
       setWorkStatus("Uploading telemetry");
@@ -490,9 +460,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 4.2 update telemetry URL in database
-     */
+    /* update telemetry URL in database */
     if (!event.telemetry.updatedDB) {
       step = "updateTelemetryURL";
       setWorkStatus("Updating telemetry URL in database");
@@ -528,16 +496,11 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 5.0 trim logger operations
-     */
+    /* trim logger operations */
     if (!event.logger.fullPath) {
       step = "trimLoggerOperations";
       try {
         setWorkStatus("Trimming logger");
-        //
-        // const srcLoggerFile =
-        //   RNFS.ExternalDirectoryPath + "/" + FN.logger;
         const srcLoggerFile =
           RNFS.ExternalDirectoryPath + "/" + "loggerOperations.txt";
         let ALL_logger = null;
@@ -548,11 +511,9 @@ function handleEvent(
         dataRead = "[" + dataRead + "]";
         ALL_logger = JSON.parse(dataRead);
         logger("DUMMY", `logger count = ${ALL_logger.length}`, caller, step);
-        //
+
         let cutLogger = "";
-        console.log(
-          `eventStartTime = ${event.startTime}  --  eventEndTime = ${event.endTime}`
-        );
+
         for (let i = 0; i < ALL_logger.length; i++) {
           if (
             ALL_logger[i].level == "OPERATION" &&
@@ -565,7 +526,7 @@ function handleEvent(
         }
         cutLogger = cutLogger.substring(0, cutLogger.length - 1);
         cutLogger = "[" + cutLogger + "]";
-        //
+
         const eventLoggerName = `${FN.eventPrefix}Logger_s${event.startTime}.json`;
         const eventLoggerPath = event.directoryPath + "/" + eventLoggerName;
         logger("DEV", `RNFS.writeFile(${eventLoggerPath}, )`, caller, step);
@@ -582,16 +543,14 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 5.1 upload logger operations
-     */
+    /* upload logger operations */
     if (!event.logger.awsURL) {
       step = "uploadLoggerOperations";
       setWorkStatus("Uploading logger operations");
       const file = {
         uri: `file://${event.logger.fullPath}`,
         name: event.logger.fileName,
-        type: "application/json",
+        type: "application/json"
       };
       const options = {
         keyPrefix: `${event.directoryName}/`,
@@ -599,7 +558,7 @@ function handleEvent(
         region: "eu-west-1",
         accessKey: AWSkeys.accessKey,
         secretKey: AWSkeys.secretKey,
-        successActionStatus: 201,
+        successActionStatus: 201
       };
       try {
         const res = await RNS3.put(file, options);
@@ -619,9 +578,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * 5.2 update logger operations URL in database
-     */
+    /* update logger operations URL in database */
     if (!event.logger.updatedDB) {
       step = "updateLoggerOperationsURL";
       setWorkStatus("Updating logger operations URL in database");
@@ -633,12 +590,12 @@ function handleEvent(
             headers: {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              authorization: "Bearer " + token,
+              authorization: "Bearer " + token
             },
             body: JSON.stringify({
               eventId: event.ID,
-              loggerURL: event.logger.awsURL,
-            }),
+              loggerURL: event.logger.awsURL
+            })
           }
         );
         if (response.status === 200) {
@@ -657,9 +614,7 @@ function handleEvent(
       }
       await updateAsyncStorage(allEvents, event);
     }
-    /**
-     * return
-     */
+    /* return */
     return resolve();
   });
 }
@@ -669,8 +624,6 @@ function updateAsyncStorage(allEvents, event) {
       await AsyncStorage.setItem(AS.uploadStatus, JSON.stringify(allEvents));
       return resolve();
     } catch (e) {
-      // saving error
-      console.log(`error setting AsyncStorage ${AS.uploadStatus}`);
       return reject();
     }
   });

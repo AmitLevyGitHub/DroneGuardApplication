@@ -1,6 +1,3 @@
-/**
- * TO-DO: integrate RNFFmpeg default logs
- */
 import RNFS from "react-native-fs";
 import { FN } from "./Assets/consts";
 const path = RNFS.ExternalDirectoryPath + "/" + FN.logger;
@@ -26,7 +23,6 @@ export default function logger(level, msg, caller, subCaller = null) {
   if (!consoleLogDummy && lvlCap === "DUMMY") {
     return;
   }
-  //log to console
   const time = Date.now();
   if (ENV === "dev") {
     let m = `${lvlCap}  --  ${caller}`;
@@ -36,27 +32,21 @@ export default function logger(level, msg, caller, subCaller = null) {
     m += `  ${time}  --  ${new Date()}\n${msg}`;
     console.log(m);
   }
-  //
   if (lvlCap === "DUMMY") {
     return;
   }
   if (lvlCap === "DEV" && !writeDevLevelLogs) {
     return;
   }
-  //log to file
   const logToWrite = JSON.stringify({
     level: lvlCap,
     caller,
     subCaller,
     time,
-    msg,
+    msg
   });
-  RNFS.appendFile(path, logToWrite + ",")
-    .then(() => {
-      //
-    })
-    .catch((e) => {
-      const m = e.hasOwnProperty("message") ? e.message : e;
-      console.log(`LOG  --  logger\n${m}`);
-    });
+  RNFS.appendFile(path, logToWrite + ",").catch(e => {
+    const m = e.hasOwnProperty("message") ? e.message : e;
+    console.log(`LOG  --  logger\n${m}`);
+  });
 }

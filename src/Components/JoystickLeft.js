@@ -39,7 +39,6 @@ const JoystickLeft = props => {
           />
         </View>
       </View>
-      {/* <View style={styles.btnLeftRightContainer}> */}
       <View style={styles.btnDownContainer}>
         <TouchableOpacity
           title=""
@@ -50,7 +49,6 @@ const JoystickLeft = props => {
           }}
         />
       </View>
-      {/* </View> */}
     </View>
   );
 };

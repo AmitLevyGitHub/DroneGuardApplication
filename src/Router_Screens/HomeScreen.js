@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Text,
@@ -14,8 +14,7 @@ import {
   Screens,
   isUploadDisabled,
   forceUpload,
-  StyleConsts,
-  AS
+  StyleConsts
 } from "../Assets/consts";
 import { Button } from "@ant-design/react-native";
 import AsyncStorage from "@react-native-community/async-storage";

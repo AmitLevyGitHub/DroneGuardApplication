@@ -16,9 +16,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
     let isSubscribed = true;
     (async () => {
       setPreparing(true);
-      /**
-       * get token/id/beachID from local storage
-       */
+      /* get token/id/beachID from local storage */
       let token = null;
       try {
         token = await AsyncStorage.getItem(AS.userToken);
@@ -48,9 +46,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         lifeGuardId,
         beachId
       });
-      /**
-       * read video stat
-       */
+      /* read video start */
       const videoPath = RNFS.ExternalDirectoryPath + "/" + FN.video;
       let vidStartTime = -1,
         vidDuration = -1,
@@ -83,9 +79,7 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         duration: vidDuration,
         startTimeInFile: vidStartTimeInFile
       });
-      /**
-       * first telemetry time
-       */
+      /* first telemetry time */
       let ALL_telemetry = [];
       try {
         const srcTelemetryPath =
@@ -102,10 +96,8 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         logger("WARNING", m, caller, `RNFS.readFile(${FN.telemetry})`);
         setPrepError(m);
       }
-      /**
-       * read uploadStatus (emergency events list) from async storage
-       * or create it from emergency events file, while respecting user events
-       */
+      /* read uploadStatus (emergency events list) from async storage
+       or create it from emergency events file, while respecting user events */
       let uploadStatus = [];
       try {
         const stringValue = await AsyncStorage.getItem(AS.uploadStatus);
@@ -120,16 +112,14 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         );
         setPrepError(m);
       }
-      //
-      //if not first time visiting upload screen return
+
       if (uploadStatus.length > 0 && uploadStatus[0] !== 1) {
         logger("DUMMY", "using emergency events from local storage", caller);
         setEventsStatus(uploadStatus);
         isSubscribed && setPreparing(false);
         return;
       }
-      //
-      //if first time visiting upload screen create list from all telemetry file
+
       logger("DUMMY", "creating emergency events list from file", caller);
       const { emergencyHeight } = navConsts;
       logger("DUMMY", `emergency height = ${emergencyHeight}`, caller);
@@ -165,19 +155,15 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
           }
         }
       }
-      //
-      //combine user events with detected events
-      //TO-DO! remove overlapping events
+
       const emergencyEvents = [...emergencyEventsDetected, ...userEvents];
-      //
-      //create eventsStatus array
+
       const t = emergencyEvents.map((event, i) => ({
         startTime: event.startTime,
         endTime: event.endTime,
         index: i,
         lifeGuardID: null,
         beachID: null,
-        //
         status: "pending",
         directoryName: null,
         directoryPath: null,
@@ -198,14 +184,14 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
           fileName: null,
           fullPath: null,
           awsURL: null,
-          updatedDB: false,
+          updatedDB: false
         },
         logger: {
           fileName: null,
           fullPath: null,
           awsURL: null,
-          updatedDB: false,
-        },
+          updatedDB: false
+        }
       }));
       setEventsStatus(t);
       try {
@@ -220,20 +206,20 @@ export default function usePrepareUpload(requirePrepare, userEvents) {
         );
         setPrepError(m);
       }
-      //
+
       isSubscribed && setPreparing(false);
     })();
     return function cleanup() {
       isSubscribed = false;
     };
   }, [requirePrepare]);
-  //
+
   return [
     prepError,
     isPreparing,
     eventsStatus,
     videoStat,
     tokenIDs,
-    firstTeleTime,
+    firstTeleTime
   ];
 }

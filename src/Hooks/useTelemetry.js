@@ -4,29 +4,23 @@ import { FN, shouldSave } from "../Assets/consts";
 import logger from "../logger";
 const caller = "useTelemetry.js";
 export default function useTelemetry(socket, hasStarted) {
-  //tele
   const [droneTele, setDroneTele] = React.useState({
     batStatus: 100,
-    wifiSignal: 90,
+    wifiSignal: 90
   });
   const [gpsTele, setGpsTele] = React.useState({
     latitude: -1.0,
     longitude: -1.0,
     altitude: 0,
-    bearing: -1.0,
+    bearing: -1.0
   });
-  //emergency events detection
-  const startTime = React.useRef(-1);
-  //
-  //
+
   React.useEffect(() => {
     const save = shouldSave.tele;
     if (!hasStarted && !socket) return;
-    socket.on("allTelemetry", (receivedTele) => {
+    socket.on("allTelemetry", receivedTele => {
       logger("DUMMY", "telemetry received", caller, "socket.on(allTelemetry)");
-      // console.log(`data received with altitude = ${M.altitude}`);
-      // console.log(`allTelemetry: ${JSON.stringify(receivedTele, null, 2)}`);
-      // console.log(`altitude = ${receivedTele.altitude}`);
+
       function scaleBat(
         num,
         in_min = 0,
@@ -66,34 +60,27 @@ export default function useTelemetry(socket, hasStarted) {
         time: now,
         batStatus: receivedTele.batStatus,
         batIcon: scaleBat(receivedTele.batStatus),
-        // wifiSignal: receivedTele.wifiSignal,
         wifiIcon: scaleWifi(
           receivedTele.wifiSignal ? receivedTele.wifiSignal : 10
-        ),
+        )
       });
       setGpsTele({
         time: now,
         latitude: receivedTele.latitude,
         longitude: receivedTele.longitude,
         altitude: receivedTele.height,
-        bearing: receivedTele.yaw,
+        bearing: receivedTele.yaw
       });
-      /**
-       * save telemetry to file
-       */
+      /* save telemetry to file */
       let telemetryToSave = { ...receivedTele, time: now };
       (async () => {
         if (!save) return;
         const path = RNFS.ExternalDirectoryPath + "/" + FN.telemetry;
         const stringifiedTele = JSON.stringify(telemetryToSave);
-        RNFS.appendFile(path, stringifiedTele + ",")
-          .then(() => {
-            //
-          })
-          .catch((e) => {
-            const m = e.hasOwnProperty("message") ? e.message : e;
-            console.log(m);
-          });
+        RNFS.appendFile(path, stringifiedTele + ",").catch(e => {
+          const m = e.hasOwnProperty("message") ? e.message : e;
+          console.log(m);
+        });
       })();
     });
     return function cleanup() {

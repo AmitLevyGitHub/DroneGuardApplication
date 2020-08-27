@@ -1,5 +1,4 @@
 import React from "react";
-import * as turf from "@turf/turf";
 import { piCameraInfo } from "../Assets/consts";
 import logger from "../logger";
 const caller = "useNavigateDrone.js";
@@ -8,22 +7,19 @@ export default function useNavigateDrone(socket, props) {
   const [axisX, setAxisX] = React.useState(-8000);
   const [axisY, setAxisY] = React.useState(-8000);
   const [navCommand, setNavCommand] = React.useState("none");
-  //
   const [isNavWorking, setIsNavWorking] = React.useState(false);
   const [navModalVisible, setNavModalVisible] = React.useState(false);
   const [navModalTitle, setNavModalTitle] = React.useState("Navigating");
   const [navStatus, setNavStatus] = React.useState(
     "Don't close this popup until confirmation"
   );
-  /**
-   * socket callback- called when navFinished emitted from server
-   * auto close modal after specific time (must be done with explicit state change)
-   */
+  /*socket callback- called when navFinished emitted from
+  server auto close modal after specific time (must be done with explicit state change) */
   React.useEffect(() => {
     if (!socket) return;
     let isSubscribed = true;
     let autoCloseTimeout = null;
-    socket.on("navFinished", (navData) => {
+    socket.on("navFinished", navData => {
       setIsNavWorking(false);
       if (navData.status) {
         logger("DEV", navData.message, caller, "socket.on(navFinished)");
@@ -33,7 +29,6 @@ export default function useNavigateDrone(socket, props) {
         setNavModalTitle("Navigation Failed");
       }
       setNavStatus(navData.message);
-      //auto close
       autoCloseTimeout = setTimeout(() => {
         isSubscribed && setNavModalVisible(false);
       }, autoCloseTimeWhenFinished);
@@ -44,11 +39,8 @@ export default function useNavigateDrone(socket, props) {
       socket.off("navFinished");
     };
   }, [socket]);
-  /**
-   * emit event to server
-   * UI is blocked until 'navFinished' received
-   * or until user closes modal
-   */
+  /* emit event to server UI is blocked until 'navFinished' received
+   or until user closes modal */
   React.useEffect(() => {
     if ((axisX <= -8000 || axisY <= -8000) && navCommand === "none") return;
     if (!socket) return;
@@ -65,16 +57,7 @@ export default function useNavigateDrone(socket, props) {
       setAxisY(-8001);
       return;
     }
-    //
-    if (navCommand === "emergency") {
-      socket.emit("command", { type: navCommand });
-      logger("DEV", `socket.emit(type: ${navCommand})`, caller);
-      setNavCommand("none");
-      setAxisX(-8001);
-      setAxisY(-8001);
-      return;
-    }
-    //
+
     setNavModalVisible(true);
     setIsNavWorking(true);
     setNavStatus("Don't close this popup");
@@ -100,15 +83,14 @@ export default function useNavigateDrone(socket, props) {
         dstBearing,
         degree,
         x,
-        y,
+        y
       } = calcDiagonalAndBearing(footprintCM, props, axisX, axisY);
-      // const dstCoordinate = calcDstCoordinate(dstDiagonalCM, dstBearing, props);
       socket.emit("command", {
         type: "press",
         distance: dstDiagonalCM,
         degree,
         x,
-        y,
+        y
       });
       logger("DEV", `socket.emit(type: ${navCommand})`, caller);
     }
@@ -116,9 +98,7 @@ export default function useNavigateDrone(socket, props) {
     setAxisX(-8001);
     setAxisY(-8001);
   }, [axisX, axisY, navCommand]);
-  /**
-   * return..
-   */
+
   return [
     setAxisX,
     setAxisY,
@@ -127,12 +107,10 @@ export default function useNavigateDrone(socket, props) {
     navModalVisible,
     setNavModalVisible,
     navModalTitle,
-    navStatus,
+    navStatus
   ];
 }
-/**
- * utility functions for navigation computations
- */
+/* utility functions for navigation computations */
 function calcFootprint(props) {
   const h = props.droneHeightCM;
   const fpWidth = Math.tan(piCameraInfo.horizontalDegree.rad / 2) * 2 * h;
@@ -146,14 +124,14 @@ function calcFootprint(props) {
   );
   return {
     widthCM: fpWidth,
-    heightCM: fpHeight,
+    heightCM: fpHeight
   };
 }
 function calcDiagonalAndBearing(footprintCM, props, axisX, axisY) {
+  // for uniformity with footprintCM
   const videoSizePX = {
-    //this variable is for uniformity with footprintCM
     widthPX: props.scaledWidth,
-    heightPX: props.scaledHeight,
+    heightPX: props.scaledHeight
   };
   let widthToDstCM = Math.abs(
     axisX * (footprintCM.widthCM / videoSizePX.widthPX)
@@ -165,15 +143,15 @@ function calcDiagonalAndBearing(footprintCM, props, axisX, axisY) {
   let y = heightToDstCM;
   if (axisX < 0) x = widthToDstCM * -1;
   if (axisY < 0) y = heightToDstCM * -1;
-  //
+
   const diagonal = Math.sqrt(
     Math.pow(widthToDstCM, 2) + Math.pow(heightToDstCM, 2)
   );
-  //
+
   let degree = (Math.atan2(axisX, axisY) * 180) / Math.PI;
   if (degree < 0) degree = 360 + degree;
   const bearing = (degree + props.droneBearing) % 360;
-  //
+
   logger(
     "DUMMY",
     `heightToDstCM = ${heightToDstCM}
@@ -189,25 +167,6 @@ function calcDiagonalAndBearing(footprintCM, props, axisX, axisY) {
     dstBearing: bearing,
     degree,
     x,
-    y,
-  };
-}
-function calcDstCoordinate(diagonal, bearing, props) {
-  const centerPoint = turf.point([
-    props.centerCoordinate.lon,
-    props.centerCoordinate.lat,
-  ]);
-  const diagonalKM = diagonal / 100000;
-  const destination = turf.destination(centerPoint, diagonalKM, bearing);
-  logger(
-    "DUMMY",
-    `dstCoordinate.lat = ${destination.geometry.coordinates[1]}
-    dstCoordinate.lon = ${destination.geometry.coordinates[0]}`,
-    caller,
-    "calcDstCoordinate()"
-  );
-  return {
-    lat: destination.geometry.coordinates[1],
-    lon: destination.geometry.coordinates[0],
+    y
   };
 }

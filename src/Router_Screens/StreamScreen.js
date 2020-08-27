@@ -19,7 +19,6 @@ import {
   Screens,
   StyleConsts
 } from "../Assets/consts";
-import ConnectModal from "../Components/ConnectModal";
 import JoystickRight from "../Components/JoystickRight";
 import JoystickLeft from "../Components/JoystickLeft";
 import useSocket from "../Hooks/useSocket";

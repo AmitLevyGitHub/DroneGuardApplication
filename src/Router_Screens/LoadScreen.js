@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import React from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 
 const LoadScreen = () => {
   return (

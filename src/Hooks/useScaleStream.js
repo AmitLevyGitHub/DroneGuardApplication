@@ -3,7 +3,7 @@ import { Dimensions } from "react-native";
 import Orientation from "react-native-orientation-locker";
 import logger from "../logger";
 const caller = "useScaleStream.js";
-//
+
 export default function useScaleStream(streamWidth, streamHeight) {
   const [windowWidth, setWindowWidth] = React.useState(0);
   const [windowHeight, setWindowHeight] = React.useState(0);
@@ -19,7 +19,7 @@ export default function useScaleStream(streamWidth, streamHeight) {
       Orientation.removeOrientationListener(handleRotate);
     };
   }, []);
-  //
+
   const { width, height } = Dimensions.get("window");
   const [scaledWidth, setScaledWidth] = React.useState(width);
   const [scaledHeight, setScaledHeight] = React.useState(height);
@@ -41,6 +41,6 @@ export default function useScaleStream(streamWidth, streamHeight) {
       caller
     );
   }, [windowHeight, windowWidth, streamWidth, streamHeight]);
-  //
+
   return [scaledWidth, scaledHeight];
 }
